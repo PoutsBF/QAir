@@ -9,14 +9,14 @@
 #include <Adafruit_NeoPixel.h>
 
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BME680.h>
+#include <Adafruit_BME280.h>
 
 #include <Adafruit_SGP30.h>
 
 Adafruit_SGP30 sgp;
 
 #define SEALEVELPRESSURE_HPA (1013.25)
-Adafruit_BME680 bme;        // I2C
+Adafruit_BME280 bme;        // I2C
 unsigned long delayTime;
 
 #define SCREEN_WIDTH 128        // OLED display width, in pixels
@@ -64,9 +64,9 @@ void setup()
         Serial.println(F("SSD1306 config ok"));
     }
 
-    while (!bme.begin())
+    while (!bme.begin(0x77))
     {
-        Serial.println("Could not find a valid BME680 sensor, check wiring!");
+        Serial.println("Could not find a valid BME280 sensor, check wiring!");
         delay(2000);
     }
 
@@ -80,17 +80,11 @@ void setup()
     Serial.println("-- Weather Station Scenario --");
     Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
     Serial.println("filter off");
-    bme.setTemperatureOversampling(BME680_OS_8X);
-    bme.setHumidityOversampling(BME680_OS_2X);
-    bme.setPressureOversampling(BME680_OS_4X);
-    bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-    bme.setGasHeater(320, 150);        // 320*C for 150 ms
-
-    // bme.setSampling(Adafruit_BME280::MODE_FORCED,
-    //                 Adafruit_BME280::SAMPLING_X1,        // temperature
-    //                 Adafruit_BME280::SAMPLING_X1,        // pressure
-    //                 Adafruit_BME280::SAMPLING_X1,        // humidity
-    //                 Adafruit_BME280::FILTER_OFF);
+    bme.setSampling(Adafruit_BME280::MODE_FORCED,
+                    Adafruit_BME280::SAMPLING_X1,        // temperature
+                    Adafruit_BME280::SAMPLING_X1,        // pressure
+                    Adafruit_BME280::SAMPLING_X1,        // humidity
+                    Adafruit_BME280::FILTER_OFF);
 
     // suggested rate is 1/60Hz (1m)
     delayTime = 60000;        // in milliseconds
@@ -153,10 +147,10 @@ void loop()
         lastBme = millis();
 
         // Only needed in forced mode! In normal mode, you can remove the next line.
-        bme.performReading();        // has no effect in normal mode
-        temperature = bme.temperature;
-        humidite = bme.humidity;
-        pression = bme.pressure / 100.0F;
+        bme.takeForcedMeasurement();        // has no effect in normal mode
+        temperature = bme.readTemperature();
+        humidite = bme.readHumidity();
+        pression = bme.readPressure() / 100.0F;
 
         hygroAbsolue = getAbsoluteHumidity(temperature, humidite);
 
