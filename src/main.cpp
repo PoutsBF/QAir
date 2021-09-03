@@ -1,22 +1,30 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 
 #include <SPI.h>
 #include <Wire.h>
 
 #include <Adafruit_GFX.h>
 //#include <FreeMono12pt7b.h>
+#include <Adafruit_Sensor.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_NeoPixel.h>
 
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME680.h>
-
+#include <bsec.h>
 #include <Adafruit_SGP30.h>
 
 Adafruit_SGP30 sgp;
 
-#define SEALEVELPRESSURE_HPA (1013.25)
-Adafruit_BME680 bme;        // I2C
+const uint8_t bsec_config_iaq[] = { 
+    #include "config/generic_18v_3s_28d/bsec_iaq.txt" 
+    };
+#define STATE_SAVE_PERIOD UINT32_C(360 * 60 * 1000)        // 360 minutes - 4 times a day
+
+// Create an object of the class Bsec
+Bsec iaqSensor;
+uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] = {0};
+uint16_t stateUpdateCounter = 0;
+
 unsigned long delayTime;
 
 #define SCREEN_WIDTH 128        // OLED display width, in pixels
@@ -42,59 +50,61 @@ Adafruit_NeoPixel strip(8, 15, NEO_GRBW + NEO_KHZ800);
 uint32_t getAbsoluteHumidity(float temperature, float humidity);
 uint32_t Wheel(byte WheelPos);
 void info_memoire(void);
+void checkIaqSensorStatus(void);
+void loadState(void);
+void updateState(void);
 
 void setup()
 {
-
+    EEPROM.begin();        // 1st address for the length
+    Wire.begin();
     Serial.begin(9600);
 
     while ((!Serial) && (millis() < 5000));        
 
     Serial.println("Bonjour !");
 
+    //-------------------------------------------------------------------------
+    // Initialisation de l'afficheur SSD1306
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
         Serial.println(F("SSD1306 allocation failed"));
-  //      for (;;)
-            ;        // Don't proceed, loop forever
+        for (;;);        // Don't proceed, loop forever
     }
     else 
     {
         Serial.println(F("SSD1306 config ok"));
     }
+    
+    //-------------------------------------------------------------------------
+    // Initialisation du capteur BME680
+    iaqSensor.begin(BME680_I2C_ADDR_PRIMARY, Wire);
+    checkIaqSensorStatus();
 
-    while (!bme.begin())
-    {
-        Serial.println("Could not find a valid BME680 sensor, check wiring!");
-        delay(2000);
-    }
+    iaqSensor.setConfig(bsec_config_iaq);
+    checkIaqSensorStatus();
 
-    // if ()
-    // //    if (!bme.begin(0x77, &Wire))
-    //     {
-    //         while (1)
-    //             ;
-    //     }
-    // weather monitoring
-    Serial.println("-- Weather Station Scenario --");
-    Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
-    Serial.println("filter off");
-    bme.setTemperatureOversampling(BME680_OS_8X);
-    bme.setHumidityOversampling(BME680_OS_2X);
-    bme.setPressureOversampling(BME680_OS_4X);
-    bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-    bme.setGasHeater(320, 150);        // 320*C for 150 ms
+    loadState();
 
-    // bme.setSampling(Adafruit_BME280::MODE_FORCED,
-    //                 Adafruit_BME280::SAMPLING_X1,        // temperature
-    //                 Adafruit_BME280::SAMPLING_X1,        // pressure
-    //                 Adafruit_BME280::SAMPLING_X1,        // humidity
-    //                 Adafruit_BME280::FILTER_OFF);
+    bsec_virtual_sensor_t sensorList[7] = {
+        BSEC_OUTPUT_RAW_TEMPERATURE,
+        BSEC_OUTPUT_RAW_PRESSURE,
+        BSEC_OUTPUT_RAW_HUMIDITY,
+        BSEC_OUTPUT_RAW_GAS,
+        BSEC_OUTPUT_IAQ,
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+    };
+
+    iaqSensor.updateSubscription(sensorList, 7, BSEC_SAMPLE_RATE_LP);
+    checkIaqSensorStatus();
 
     // suggested rate is 1/60Hz (1m)
     delayTime = 60000;        // in milliseconds
 
+    //-------------------------------------------------------------------------
+    // Initialisation du capteur SGP30
     if (!sgp.begin())
     {
         Serial.println("Sensor not found");
@@ -151,12 +161,17 @@ void loop()
         uint32_t hygroAbsolue;
 
         lastBme = millis();
-
-        // Only needed in forced mode! In normal mode, you can remove the next line.
-        bme.performReading();        // has no effect in normal mode
-        temperature = bme.temperature;
-        humidite = bme.humidity;
-        pression = bme.pressure / 100.0F;
+        if (iaqSensor.run())
+        {        // If new data is available
+            pression = iaqSensor.pressure;
+            temperature = iaqSensor.temperature;
+            humidite = iaqSensor.humidity;
+            updateState();
+        }
+        else
+        {
+            checkIaqSensorStatus();
+        }
 
         hygroAbsolue = getAbsoluteHumidity(temperature, humidite);
 
@@ -431,4 +446,106 @@ void info_memoire(void)
 #else         // __arm__
     return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif        // __arm__
+    }
+
+    // Helper function definitions
+    void checkIaqSensorStatus(void)
+    {
+        if (iaqSensor.status != BSEC_OK)
+        {
+            if (iaqSensor.status < BSEC_OK)
+            {
+                Serial.print("BSEC error code : ");
+                Serial.println(iaqSensor.status);
+                for (;;);
+            }
+            else
+            {
+                Serial.print("BSEC warning code : ");
+                Serial.println(iaqSensor.status);
+            }
+        }
+
+        if (iaqSensor.bme680Status != BME680_OK)
+        {
+            if (iaqSensor.bme680Status < BME680_OK)
+            {
+                Serial.print("BME680 error code : ");
+                Serial.println(iaqSensor.bme680Status);
+                for (;;);
+            }
+            else
+            {
+                Serial.print("BME680 warning code : ");
+                Serial.println(iaqSensor.bme680Status);
+            }
+        }
+        iaqSensor.status = BSEC_OK;
+    }
+    void loadState(void)
+    {
+        if (EEPROM.read(0) == BSEC_MAX_STATE_BLOB_SIZE)
+        {
+            // Existing state in EEPROM
+            Serial.println("Reading state from EEPROM");
+
+            for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++)
+            {
+                bsecState[i] = EEPROM.read(i + 1);
+                Serial.println(bsecState[i], HEX);
+            }
+
+            iaqSensor.setState(bsecState);
+            checkIaqSensorStatus();
+        }
+        else
+        {
+            // Erase the EEPROM with zeroes
+            Serial.println("Erasing EEPROM");
+
+            for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE + 1; i++)
+                EEPROM.write(i, 0);
+
+        //    EEPROM.commit();
+        }
+    }
+
+    void updateState(void)
+    {
+        bool update = false;
+        /* Set a trigger to save the state. Here, the state is saved every STATE_SAVE_PERIOD with the first state being saved once the algorithm achieves full calibration, i.e. iaqAccuracy = 3 */
+        if (stateUpdateCounter == 0)
+        {
+            if (iaqSensor.iaqAccuracy >= 3)
+            {
+                update = true;
+                stateUpdateCounter++;
+            }
+        }
+        else
+        {
+            /* Update every STATE_SAVE_PERIOD milliseconds */
+            if ((stateUpdateCounter * STATE_SAVE_PERIOD) < millis())
+            {
+                update = true;
+                stateUpdateCounter++;
+            }
+        }
+
+        if (update)
+        {
+            iaqSensor.getState(bsecState);
+            checkIaqSensorStatus();
+
+            Serial.println("Writing state to EEPROM");
+
+            for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++)
+            {
+                EEPROM.write(i + 1, bsecState[i]);
+                Serial.println(bsecState[i], HEX);
+            }
+
+            EEPROM.write(0, BSEC_MAX_STATE_BLOB_SIZE);
+         //   EEPROM.commit();
+        }
     }
