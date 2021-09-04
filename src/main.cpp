@@ -6,24 +6,14 @@
 
 #include <Adafruit_GFX.h>
 //#include <FreeMono12pt7b.h>
-#include <Adafruit_Sensor.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_NeoPixel.h>
 
-#include <bsec.h>
-#include <Adafruit_SGP30.h>
+#include <SparkFun_SGP30_Arduino_Library.h>        // Click here to get the library: http://librarymanager/All#SparkFun_SGP30
+#include <Zanshin_BME680.h>  // Include the BME680 Sensor library
 
-Adafruit_SGP30 sgp;
-
-const uint8_t bsec_config_iaq[] = { 
-    #include "config/generic_18v_3s_28d/bsec_iaq.txt" 
-    };
-#define STATE_SAVE_PERIOD UINT32_C(360 * 60 * 1000)        // 360 minutes - 4 times a day
-
-// Create an object of the class Bsec
-Bsec iaqSensor;
-uint8_t bsecState[BSEC_MAX_STATE_BLOB_SIZE] = {0};
-uint16_t stateUpdateCounter = 0;
+SGP30 mySensor;        //create an instance of the SGP30 class
+BME680_Class BME680;        ///< Create an instance of the BME680 class
 
 unsigned long delayTime;
 
@@ -79,42 +69,38 @@ void setup()
     
     //-------------------------------------------------------------------------
     // Initialisation du capteur BME680
-    iaqSensor.begin(BME680_I2C_ADDR_PRIMARY, Wire);
-    checkIaqSensorStatus();
+    while (!BME680.begin(I2C_STANDARD_MODE))
+    {        // Start BME680 using I2C, use first device found
+        Serial.print(F("-  Unable to find BME680. Trying again in 5 seconds.\n"));
+        delay(5000);
+    }        // of loop until device is located
 
-    iaqSensor.setConfig(bsec_config_iaq);
-    checkIaqSensorStatus();
-
-    loadState();
-
-    bsec_virtual_sensor_t sensorList[7] = {
-        BSEC_OUTPUT_RAW_TEMPERATURE,
-        BSEC_OUTPUT_RAW_PRESSURE,
-        BSEC_OUTPUT_RAW_HUMIDITY,
-        BSEC_OUTPUT_RAW_GAS,
-        BSEC_OUTPUT_IAQ,
-        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
-    };
-
-    iaqSensor.updateSubscription(sensorList, 7, BSEC_SAMPLE_RATE_LP);
-    checkIaqSensorStatus();
+    Serial.print(F("- Setting 16x oversampling for all sensors\n"));
+    BME680.setOversampling(TemperatureSensor, Oversample16);        // Use enumerated type values
+    BME680.setOversampling(HumiditySensor, Oversample16);           // Use enumerated type values
+    BME680.setOversampling(PressureSensor, Oversample16);           // Use enumerated type values
+    Serial.print(F("- Setting IIR filter to a value of 4 samples\n"));
+    BME680.setIIRFilter(IIR4);                                                          // Use enumerated type values
+    Serial.print(F("- Setting gas measurement to 320\xC2\xB0\x43 for 150ms\n"));        // "?C" symbols
+    BME680.setGas(320, 150);                                                            // 320?c for 150 milliseconds
 
     // suggested rate is 1/60Hz (1m)
     delayTime = 60000;        // in milliseconds
 
     //-------------------------------------------------------------------------
     // Initialisation du capteur SGP30
-    if (!sgp.begin())
+    if (mySensor.begin() == false)
     {
-        Serial.println("Sensor not found");
+        Serial.println("No SGP30 Detected. Check connections.");
         while (1)
             ;
     }
+
+    //Initializes sensor for air quality readings
+    //measureAirQuality should be called in one second increments after a call to initAirQuality
+    mySensor.initAirQuality();
+
     Serial.print("Found SGP30 serial #");
-    Serial.print(sgp.serialnumber[0], HEX);
-    Serial.print(sgp.serialnumber[1], HEX);
-    Serial.println(sgp.serialnumber[2], HEX);
 
     //******************************************************************
     // Show initial display buffer contents on the screen --
@@ -155,27 +141,28 @@ void loop()
 
     if(millis() - lastBme >= delayTime)
     {
+        int32_t temp, humidity, pressure, gas;        // BME readings
         float temperature;
         float humidite;
-        float pression;
+        int16_t pression;
         uint32_t hygroAbsolue;
 
         lastBme = millis();
-        if (iaqSensor.run())
-        {        // If new data is available
-            pression = iaqSensor.pressure;
-            temperature = iaqSensor.temperature;
-            humidite = iaqSensor.humidity;
-            updateState();
-        }
-        else
-        {
-            checkIaqSensorStatus();
-        }
+
+        BME680.getSensorData(temp, humidity, pressure, gas);        // Get readings
+        pression = (int16_t) pressure / 100;
+        temperature = temperature / 100;
+        humidite = humidity / 1000;
 
         hygroAbsolue = getAbsoluteHumidity(temperature, humidite);
 
-        sgp.setHumidity(hygroAbsolue);
+        //Set the humidity compensation on the SGP30 to the measured value
+        //If no humidity sensor attached, sensHumidity should be 0 and sensor will use default
+        mySensor.setHumidity(hygroAbsolue);
+        Serial.print("Absolute humidity compensation set to: ");
+        Serial.print(hygroAbsolue);
+        Serial.println("g/m^3 ");
+
         hygroAbsolue /= 100;
 
         display.setTextSize(2);        // Normal 1:1 pixel scale
@@ -204,12 +191,27 @@ void loop()
 
     if(millis() - lastSgp >= 1000)    // toutes les secondes
     {
-        static int counter = 0;
 
         lastSgp = millis();
-        if (!sgp.IAQmeasure())
+        SGP30ERR result = mySensor.measureAirQuality();
+        if (result != SGP30_SUCCESS)
         {
-            Serial.println("Measurement failed");
+            switch (result)
+            {
+                case SGP30_ERR_BAD_CRC:
+                    Serial.println("Measurement failed, bad CRC");
+                    break;
+                case SGP30_ERR_I2C_TIMEOUT:
+                    Serial.println("Measurement failed, timeout");
+                    break;
+                case SGP30_SELF_TEST_FAIL:
+                    Serial.println("Measurement failed, test fail");
+                    break;
+
+                default:
+                    Serial.println("Measurement failed, dÇfaut non recensÇ");
+                    break;
+            }
         }
         else
         {
@@ -217,13 +219,13 @@ void loop()
             static uint16_t fn_1 = 0;
             uint16_t eCO2;
 
-            eCO2 = (fn_1 >> 1) + (sgp.eCO2 >> 1);   // K = 0,5 donc dÇcalage de 1 pour division par 2
+            eCO2 = (fn_1 >> 1) + (mySensor.CO2 >> 1);        // K = 0,5 donc dÇcalage de 1 pour division par 2
             fn_1 = eCO2;
 
             display.setTextSize(2);        // Normal 1:1 pixel scale
             display.fillRect(0, 31, 128, 32, SSD1306_BLACK);
             display.setCursor(0, 32);
-            display.print(sgp.TVOC);
+            display.print(mySensor.TVOC);
             display.setTextSize(1);        // Normal 1:1 pixel scale
             display.print("ppb TCOV");
             display.setCursor(0, 48);
@@ -233,90 +235,6 @@ void loop()
             display.print("ppm eCO2");
             display.display();
 
-            if (!sgp.IAQmeasureRaw())
-            {
-                Serial.println("Raw Measurement failed");
-            }
-            else
-            {
-                // Serial.print("Raw H2 ");
-                // Serial.print(sgp.rawH2);
-                // Serial.print(" \t");
-                // Serial.print("Raw Ethanol ");
-                // Serial.print(sgp.rawEthanol);
-                // Serial.println("");
-
-                counter++;
-                if (counter == 30)
-                {
-                    counter = 0;
-
-                    uint16_t TVOC_base, eCO2_base;
-                    if (!sgp.getIAQBaseline(&eCO2_base, &TVOC_base))
-                    {
-                        Serial.println("Failed to get baseline readings");
-                    }
-                    else
-                    {
-                        #define profondeurHisto 30
-                        static uint16_t histo_eCO2[profondeurHisto] = {0};
-                        static uint16_t histo_TCOV[profondeurHisto] = {0};
-                        static uint16_t pos_eCO2 = 0;
-                        static uint16_t pos_TCOV = 0;
-                        static uint16_t min_eCO2 = 0xFFFF;
-                        static uint16_t max_eCO2 = 0;
-                        static uint16_t min_TCOV = 0xFFFF;
-                        static uint16_t max_TCOV = 0;
-                        uint16_t diff_eCO2;
-                        uint16_t diff_TCOV;
-
-                        if (eCO2_base > max_eCO2) max_eCO2 = eCO2_base;
-                        if (TVOC_base > max_TCOV) max_TCOV = TVOC_base;
-
-                        if (eCO2_base < min_eCO2) min_eCO2 = eCO2_base;
-                        if (TVOC_base < min_TCOV) min_TCOV = TVOC_base;
-
-                        diff_eCO2 = eCO2_base - histo_eCO2[((pos_eCO2) ? (pos_eCO2 - 1) : (profondeurHisto - 1))];
-                        diff_TCOV = TVOC_base - histo_TCOV[((pos_TCOV) ? (pos_TCOV - 1) : (profondeurHisto - 1))];
-
-                        histo_eCO2[pos_eCO2++] = eCO2_base;
-                        if (pos_eCO2 == profondeurHisto)
-                        {
-                            pos_eCO2 = 0;
-                        }
-                        uint32_t moyenneCO2 = 0;
-                        uint8_t indices = 0;
-                        for (int i = 0; i < profondeurHisto; i++)
-                        {
-                            moyenneCO2 += histo_eCO2[i];
-                            if (histo_eCO2[i] != 0)
-                                indices++;
-                        }
-                        moyenneCO2 /= indices;
-
-                        histo_TCOV[pos_TCOV++] = TVOC_base;
-                        if(pos_TCOV == profondeurHisto)
-                        {
-                            pos_TCOV = 0;
-                        }
-
-                        Serial.print("****Baseline values: eCO2: ");
-                        Serial.print(eCO2_base, DEC);
-                        Serial.print(" min: ");
-                        Serial.print(min_eCO2, DEC);
-                        Serial.print(" moy: ");
-                        Serial.print(moyenneCO2, DEC);
-                        Serial.print(" max: ");
-                        Serial.print(max_eCO2, DEC);
-                        Serial.print(" diff: ");
-                        Serial.print((int16_t)diff_eCO2, DEC);
-                        Serial.print(" & TVOC: ");
-                        Serial.print(TVOC_base, DEC);
-                        Serial.print(" diff: ");
-                        Serial.println((int16_t)diff_TCOV, DEC);
-                    }
-                }
-            }
             // Serial.println();
         }
     }
@@ -328,43 +246,43 @@ void loop()
     static uint8_t nbLedStrip = 0;
 
     strip.clear();
-    if (sgp.eCO2 < 750)
+    if (mySensor.CO2 < 750)
     {
         delta = 1000;
         couleurStrip = 0x00FF00;
         nbLedStrip = 1;
     }
-    else if (sgp.eCO2 < 1000)
+    else if (mySensor.CO2 < 1000)
     {
         delta = 900;
         couleurStrip = 0x3FDC04;
         nbLedStrip = 2;
     }
-    else if (sgp.eCO2 < 1250)
+    else if (mySensor.CO2 < 1250)
     {
         delta = 800;
         couleurStrip = 0x79bd08;
         nbLedStrip = 3;
     }
-    else if (sgp.eCO2 < 1500)
+    else if (mySensor.CO2 < 1500)
     {
         delta = 800;
         couleurStrip = 0xB39e0c;
         nbLedStrip = 4;
     }
-    else if (sgp.eCO2 < 2000)
+    else if (mySensor.CO2 < 2000)
     {
         delta = 700;
         couleurStrip = 0xEd7f10;
         nbLedStrip = 5;
     }
-    else if (sgp.eCO2 < 2500)
+    else if (mySensor.CO2 < 2500)
     {
         delta = 700;
         couleurStrip = 0xF44708;
         nbLedStrip = 6;
     }
-    else if (sgp.eCO2 < 3000)
+    else if (mySensor.CO2 < 3000)
     {
         delta = 600;
         couleurStrip = 0xf92805;
@@ -437,115 +355,13 @@ void info_memoire(void)
 #ifdef __arm__
     return &top - reinterpret_cast<char *>(sbrk(0));
 #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-    if((&top - __brkval) != p_free)
+    if ((&top - __brkval) != p_free)
     {
         p_free = &top - __brkval;
-        Serial.print("m√©moire libre : ");
+        Serial.print("m??moire libre : ");
         Serial.println(p_free);
     }
 #else         // __arm__
     return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif        // __arm__
-    }
-
-    // Helper function definitions
-    void checkIaqSensorStatus(void)
-    {
-        if (iaqSensor.status != BSEC_OK)
-        {
-            if (iaqSensor.status < BSEC_OK)
-            {
-                Serial.print("BSEC error code : ");
-                Serial.println(iaqSensor.status);
-                for (;;);
-            }
-            else
-            {
-                Serial.print("BSEC warning code : ");
-                Serial.println(iaqSensor.status);
-            }
-        }
-
-        if (iaqSensor.bme680Status != BME680_OK)
-        {
-            if (iaqSensor.bme680Status < BME680_OK)
-            {
-                Serial.print("BME680 error code : ");
-                Serial.println(iaqSensor.bme680Status);
-                for (;;);
-            }
-            else
-            {
-                Serial.print("BME680 warning code : ");
-                Serial.println(iaqSensor.bme680Status);
-            }
-        }
-        iaqSensor.status = BSEC_OK;
-    }
-    void loadState(void)
-    {
-        if (EEPROM.read(0) == BSEC_MAX_STATE_BLOB_SIZE)
-        {
-            // Existing state in EEPROM
-            Serial.println("Reading state from EEPROM");
-
-            for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++)
-            {
-                bsecState[i] = EEPROM.read(i + 1);
-                Serial.println(bsecState[i], HEX);
-            }
-
-            iaqSensor.setState(bsecState);
-            checkIaqSensorStatus();
-        }
-        else
-        {
-            // Erase the EEPROM with zeroes
-            Serial.println("Erasing EEPROM");
-
-            for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE + 1; i++)
-                EEPROM.write(i, 0);
-
-        //    EEPROM.commit();
-        }
-    }
-
-    void updateState(void)
-    {
-        bool update = false;
-        /* Set a trigger to save the state. Here, the state is saved every STATE_SAVE_PERIOD with the first state being saved once the algorithm achieves full calibration, i.e. iaqAccuracy = 3 */
-        if (stateUpdateCounter == 0)
-        {
-            if (iaqSensor.iaqAccuracy >= 3)
-            {
-                update = true;
-                stateUpdateCounter++;
-            }
-        }
-        else
-        {
-            /* Update every STATE_SAVE_PERIOD milliseconds */
-            if ((stateUpdateCounter * STATE_SAVE_PERIOD) < millis())
-            {
-                update = true;
-                stateUpdateCounter++;
-            }
-        }
-
-        if (update)
-        {
-            iaqSensor.getState(bsecState);
-            checkIaqSensorStatus();
-
-            Serial.println("Writing state to EEPROM");
-
-            for (uint8_t i = 0; i < BSEC_MAX_STATE_BLOB_SIZE; i++)
-            {
-                EEPROM.write(i + 1, bsecState[i]);
-                Serial.println(bsecState[i], HEX);
-            }
-
-            EEPROM.write(0, BSEC_MAX_STATE_BLOB_SIZE);
-         //   EEPROM.commit();
-        }
-    }
+}
