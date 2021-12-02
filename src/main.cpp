@@ -52,31 +52,26 @@ void setup()
 
     Serial.println("Bonjour !");
 
+    //-------------------------------------------------------------------------
+    // D‚marrage du oled SSD1306
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
         Serial.println(F("SSD1306 allocation failed"));
-  //      for (;;)
-            ;        // Don't proceed, loop forever
     }
     else 
     {
         Serial.println(F("SSD1306 config ok"));
     }
 
-    while (!bme.begin(0x77))
+    //-------------------------------------------------------------------------
+    // D‚marrage du BME280
+    while (!bme.begin(0x76, &Wire))
     {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
         delay(2000);
     }
 
-    // if ()
-    // //    if (!bme.begin(0x77, &Wire))
-    //     {
-    //         while (1)
-    //             ;
-    //     }
-    // weather monitoring
     Serial.println("-- Weather Station Scenario --");
     Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
     Serial.println("filter off");
@@ -87,8 +82,10 @@ void setup()
                     Adafruit_BME280::FILTER_OFF);
 
     // suggested rate is 1/60Hz (1m)
-    delayTime = 60000;        // in milliseconds
+    delayTime = 10000;        // in milliseconds
 
+    //-------------------------------------------------------------------------
+    // D‚marrage du SGP30
     if (!sgp.begin())
     {
         Serial.println("Sensor not found");
