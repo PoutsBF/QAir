@@ -3,22 +3,28 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#include <Adafruit_GFX.h>
+//#include <Adafruit_GFX.h>
 //#include <FreeMono12pt7b.h>
-#include <Adafruit_SSD1306.h>
-#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_SSD1306.h>
 
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
+//#include <Adafruit_NeoPixel.h>
 
-#include <Adafruit_SGP30.h>
+//#include <Adafruit_Sensor.h>
+//#include <Adafruit_BME280.h>
 
+//#include <Adafruit_SGP30.h>
+
+/*---- mise en commentaire SGP30 ----
 Adafruit_SGP30 sgp;
+*/
 
+/*---- mise en commentaire BMP280 ----
 #define SEALEVELPRESSURE_HPA (1013.25)
 Adafruit_BME280 bme;        // I2C
 unsigned long delayTime;
+*/
 
+/*---- mise en commentaire SSD1306 ----
 #define SCREEN_WIDTH 128        // OLED display width, in pixels
 #define SCREEN_HEIGHT 64        // OLED display height, in pixels
 
@@ -31,17 +37,20 @@ unsigned long delayTime;
 #define SCREEN_ADDRESS 0x3C        ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-#define NUMFLAKES 10        // Number of snowflakes in the animation example
-
 #define LOGO_HEIGHT 16
 #define LOGO_WIDTH 16
+*/
 
+/*---- mise en commentaire nÃ©opixel ----
 Adafruit_NeoPixel strip(8, 15, NEO_GRBW + NEO_KHZ800);
+*/
 
-// calcul de l'humiditï¿½ absolue
+// calcul de l'humiditÃ© absolue
 uint32_t getAbsoluteHumidity(float temperature, float humidity);
 uint32_t Wheel(byte WheelPos);
-void info_memoire(void);
+// void info_memoire(void);
+
+
 
 void setup()
 {
@@ -53,7 +62,7 @@ void setup()
     Serial.println("Bonjour !");
 
     //-------------------------------------------------------------------------
-    // D‚marrage du oled SSD1306
+    // DÃ©marrage du oled SSD1306
     // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
     if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS))
     {
@@ -65,7 +74,7 @@ void setup()
     }
 
     //-------------------------------------------------------------------------
-    // D‚marrage du BME280
+    // Dï¿½marrage du BME280
     while (!bme.begin(0x76, &Wire))
     {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");
@@ -85,7 +94,7 @@ void setup()
     delayTime = 10000;        // in milliseconds
 
     //-------------------------------------------------------------------------
-    // D‚marrage du SGP30
+    // Dï¿½marrage du SGP30
     if (!sgp.begin())
     {
         Serial.println("Sensor not found");
@@ -166,7 +175,7 @@ void loop()
         display.print(hygroAbsolue);
         display.setTextSize(1);        // Normal 1:1 pixel scale
         display.setCursor(53, 1);
-        display.print("øC");
+        display.print("ï¿½C");
         display.setCursor(110, 1);
         display.print("%HR");
         display.setCursor(48, 15);
@@ -193,7 +202,7 @@ void loop()
             static uint16_t fn_1 = 0;
             uint16_t eCO2;
 
-            eCO2 = (fn_1 >> 1) + (sgp.eCO2 >> 1);   // K = 0,5 donc d‚calage de 1 pour division par 2
+            eCO2 = (fn_1 >> 1) + (sgp.eCO2 >> 1);   // K = 0,5 donc dï¿½calage de 1 pour division par 2
             fn_1 = eCO2;
 
             display.setTextSize(2);        // Normal 1:1 pixel scale
@@ -369,7 +378,7 @@ void loop()
         strip.show();
     }
 
-    info_memoire();
+//    info_memoire();
 }
 
 uint32_t getAbsoluteHumidity(float temperature, float humidity)
@@ -398,28 +407,28 @@ uint32_t Wheel(byte WheelPos)
     return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
-#ifdef __arm__
-// should use uinstd.h to define sbrk but Due causes a conflict
-extern "C" char *sbrk(int incr);
-#else         // __ARM__
-extern char *__brkval;
-#endif        // __arm__
+// #ifdef __arm__
+// // should use uinstd.h to define sbrk but Due causes a conflict
+// extern "C" char *sbrk(int incr);
+// #else         // __ARM__
+// extern char *__brkval;
+// #endif        // __arm__
 
-void info_memoire(void)
-{
-    static int p_free = 0;
+// void info_memoire(void)
+// {
+//     static int p_free = 0;
 
-    char top;
-#ifdef __arm__
-    return &top - reinterpret_cast<char *>(sbrk(0));
-#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-    if((&top - __brkval) != p_free)
-    {
-        p_free = &top - __brkval;
-        Serial.print("mÃ©moire libre : ");
-        Serial.println(p_free);
-    }
-#else         // __arm__
-    return __brkval ? &top - __brkval : &top - __malloc_heap_start;
-#endif        // __arm__
-    }
+//     char top;
+// #ifdef __arm__
+//     return &top - reinterpret_cast<char *>(sbrk(0));
+// #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+//     if((&top - __brkval) != p_free)
+//     {
+//         p_free = &top - __brkval;
+//         Serial.print("mÃ©moire libre : ");
+//         Serial.println(p_free);
+//     }
+// #else         // __arm__
+//     return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+// #endif        // __arm__
+//     }
