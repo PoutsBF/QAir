@@ -1,7 +1,11 @@
 #include <Arduino.h>
 
+#define DEBUG_SERIAL
+
 #include <SPI.h>
 #include <Wire.h>
+
+#include <capteurEnv.h>
 
 #include <Adafruit_GFX.h>
 // #include <FreeMono12pt7b.h>
@@ -10,7 +14,6 @@
 #include <Adafruit_NeoPixel.h>
 
 #include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
 
 #include <Adafruit_SGP30.h>
 
@@ -18,23 +21,9 @@
 #include <FS.h>
 
 //---------------------------------------------------------
-// Fonctions et variables pour la gestion du capteur BME280
+// Gestion du capteur environnement
 //
-Adafruit_BME280 bme;        // I2C
-struct sdata_env
-{
-    float temperature;
-    float humidite;
-    float pression;
-    uint32_t hygroAbsolue;
-};
-#define SEALEVELPRESSURE_HPA (1013.25)
-unsigned long delayTime;
-uint8_t bme280_OK = 0;
-uint8_t initBME280(void);
-// calcul de l'humidité absolue
-uint32_t getAbsoluteHumidity(float temperature, float humidity);
-
+CapteurEnv capteurEnv;
 //---------------------------------------------------------
 // Fonctions et variables pour la gestion du capteur SGP30
 //
@@ -86,6 +75,8 @@ void displayAffiche(sdata_env_qualite);
  ******************************************************************************/
 void setup()
 {
+    
+    configTime(0, 0, "pool.ntp.org");
     Serial.begin(115200);
 
     while ((!Serial) && (millis() < 5000));        
@@ -93,10 +84,7 @@ void setup()
     Serial.println("Bonjour !");
 
     displayOK = initDisplay();
-    bme280_OK = initBME280();
-
-    // suggested rate is 1/60Hz (1m)
-    delayTime = 10000;        // in milliseconds
+    capteurEnv.init(10000);
 
     sgp30_OK = initSGP30();
 
@@ -167,14 +155,6 @@ void loop()
     afficheStrip(data_env_qualite.eCO2);
 
     //    info_memoire();
-}
-
-uint32_t getAbsoluteHumidity(float temperature, float humidity)
-{
-    // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
-    const float absoluteHumidity = 216.7f * ((humidity / 100.0f) * 6.112f * exp((17.62f * temperature) / (243.12f + temperature)) / (273.15f + temperature));        // [g/m^3]
-    const uint32_t absoluteHumidityScaled = static_cast<uint32_t>(1000.0f * absoluteHumidity);                                                                       // [mg/m^3]
-    return absoluteHumidityScaled;
 }
 
 // Input a value 0 to 255 to get a color value.
@@ -287,40 +267,6 @@ void displayAffiche(sdata_env_qualite data_env_qualite)
     display.setTextSize(1);        // Normal 1:1 pixel scale
     display.print("ppm eCO2");
     display.display();
-}
-
-uint8_t initBME280(void)
-{
-    uint8_t nbTest = 10;            // 10 essais
-    uint8_t connexionOK = 0;        // état de la connexion au BME280, état inversé
-
-    //-------------------------------------------------------------------------
-    // Démarrage du BME280
-    do
-    {
-        Serial.println("Essai de connexion du BME280");
-        // Délai avant d'agir
-        delay(200);
-        // Teste la connexion avec le BME280
-        connexionOK = !bme.begin(0x76, &Wire);
-    } while (connexionOK && nbTest--);
-
-    if(connexionOK)
-    {
-        Serial.println("Could not find a valid BME280 sensor, check wiring!");
-        return false;
-    }
-
-    Serial.println("-- Configuration du BME280 --");
-    Serial.println("forced mode, 1x temperature / 1x humidity / 1x pressure oversampling,");
-    Serial.println("filter off");
-    bme.setSampling(Adafruit_BME280::MODE_FORCED,
-                    Adafruit_BME280::SAMPLING_X1,        // temperature
-                    Adafruit_BME280::SAMPLING_X1,        // pressure
-                    Adafruit_BME280::SAMPLING_X1,        // humidity
-                    Adafruit_BME280::FILTER_OFF);
-
-    return true;
 }
 
 uint8_t initSGP30(void)
