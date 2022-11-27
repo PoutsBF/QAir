@@ -6,6 +6,7 @@
 #include <Wire.h>
 
 #include <capteurEnv.h>
+#include <capteurQualAir.h>
 
 #include <Adafruit_GFX.h>
 // #include <FreeMono12pt7b.h>
