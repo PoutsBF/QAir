@@ -16,8 +16,6 @@
 
 #include <Adafruit_Sensor.h>
 
-#include <Adafruit_SGP30.h>
-
 #include <WiFi.h>
 #include <FS.h>
 
@@ -25,19 +23,6 @@
 // Gestion du capteur environnement
 //
 CapteurEnv capteurEnv;
-//---------------------------------------------------------
-// Fonctions et variables pour la gestion du capteur SGP30
-//
-Adafruit_SGP30 sgp;
-struct sdata_env_qualite
-{
-    uint16_t eCO2;
-    uint16_t TVOC;
-};
-uint8_t sgp30_OK = 0;
-uint8_t initSGP30(void);
-#define PROFONDEUR_HISTO 30
-void moyenneCO2(void);
 
 //---------------------------------------------------------
 // Configuration néopixel (strip)
