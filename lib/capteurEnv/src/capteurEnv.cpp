@@ -16,11 +16,11 @@ Librairie pour la gestion du capteur BME280
 CapteurEnv::CapteurEnv(/* args */)
 {
     device_OK = 0;
+    lastBme = 0 - delayTime;
 }
 
 CapteurEnv::~CapteurEnv()
-{
-}
+{}
 
 /// @brief 
 /// Initialise le capteur d'environnement (température, hygrométrie, pression)
@@ -70,6 +70,9 @@ void CapteurEnv::init(uint16_t arg_delay_time)
     return;
 }
 
+/// @brief Calcule le niveau d'humidité absolu en mg/m3
+/// @param temperature 
+/// @param humidity 
 void CapteurEnv::calcAbsoluteHumidity(float temperature, float humidity)
 {
     // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
@@ -80,8 +83,26 @@ void CapteurEnv::calcAbsoluteHumidity(float temperature, float humidity)
         static_cast<uint32_t>(1000.0f * cAbsoluteHumidity);
 }
 
-//////////////////////////////////////////
+/// @brief Procédure appelée régulièrement (voir si possible avec un timer ?)
+/// @param data_env 
+/// @return 
+uint8_t CapteurEnv::lecture(sdata_env * data_env)
+{    
+    if ((millis() - lastBme >= delayTime) && device_OK)
+    {
+        lastBme = millis();
 
-uint32_t getAbsoluteHumidity()
-{
+        // Only needed in forced mode! In normal mode, you can remove the next line.
+        bme.takeForcedMeasurement();        // has no effect in normal mode
+        data_env->temperature = bme.readTemperature();
+        data_env->humidite = bme.readHumidity();
+        data_env->pression = bme.readPressure() / 100.0F;
+        calcAbsoluteHumidity(data_env->temperature, data_env->humidite);
+        data_env->hygroAbsolue = absoluteHumidity;
+
+        return true;
+    }
+    return false;
 }
+
+//////////////////////////////////////////

@@ -26,8 +26,10 @@ class CapteurEnv
 private:
     Adafruit_BME280 bme;        // I2C
     uint8_t device_OK;          // Etat du capteur
-    unsigned long delayTime;
-    uint32_t absoluteHumidity;
+    uint32_t absoluteHumidity;          // Valeur en mg/m3 sur dernière mesure
+
+    unsigned long delayTime;            // délai entre les mesures
+    unsigned long lastBme;       // Timer pour les délais entre mesures
 
     // calcul de l'humidité absolue
     void calcAbsoluteHumidity(float temperature, float humidity);

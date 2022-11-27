@@ -97,26 +97,13 @@ void setup()
  ******************************************************************************/
 void loop()
 {
-    static unsigned long lastBme = 0 - delayTime;
     static unsigned long lastSgp = 0;
     static sdata_env_qualite data_env_qualite = {0};         // Stocke les données eCO2 et TCOV
+    static sdata_env data_env = {0};
 
-    if((millis() - lastBme >= delayTime) && bme280_OK)
+    if(capteurEnv.lecture(&data_env))
     {
-        sdata_env data_env;
- 
-        lastBme = millis();
-
-        // Only needed in forced mode! In normal mode, you can remove the next line.
-        bme.takeForcedMeasurement();        // has no effect in normal mode
-        data_env.temperature = bme.readTemperature();
-        data_env.humidite = bme.readHumidity();
-        data_env.pression = bme.readPressure() / 100.0F;
-
-        data_env.hygroAbsolue = getAbsoluteHumidity(data_env.temperature, data_env.humidite);
-
-        if(sgp30_OK) sgp.setHumidity(data_env.hygroAbsolue);
-        data_env.hygroAbsolue /= 100;
+        if (sgp30_OK) sgp.setHumidity(data_env.hygroAbsolue);
 
         // Affiche les données sur l'écran lcd s'il est correctement initialisé
         if (displayOK) displayAffiche(data_env);
@@ -225,7 +212,9 @@ uint8_t initDisplay()
 
 void displayAffiche(sdata_env data_env)
 {
+#ifdef DEBUG_SERIAL
     Serial.printf("%0.2f°C, %0.2f %%HR, %0.0fhPa, %u m3\n", data_env.temperature, data_env.humidite, data_env.pression, data_env.hygroAbsolue);
+#endif
 
     display.setTextSize(2);        // Double 2:1 pixel scale
     display.fillRect(0, 0, 128, 30, SSD1306_BLACK);
