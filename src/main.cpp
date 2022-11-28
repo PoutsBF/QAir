@@ -80,6 +80,10 @@ void loop()
 
     if(capteurQualAir.lecture(&data_env_qualite))
     {
+        if (displayOK) displayAffiche(data_env_qualite);
+
+        stripled.afficheStrip(data_env_qualite.eCO2);
+    }
         displayQAir.displayAffiche(data_env_qualite);
 
         stripled.afficheStrip(data_env_qualite.eCO2);
