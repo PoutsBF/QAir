@@ -36,7 +36,7 @@ private:
 
     /* data */
 public:
-    CapteurEnv(/* args */);
+    CapteurEnv();
     ~CapteurEnv();
 
     uint8_t capteur_OK();

@@ -13,11 +13,8 @@ Librairie pour la gestion du capteur BME280
 
 #include <Adafruit_BME280.h>
 
-CapteurEnv::CapteurEnv(/* args */)
-{
-    device_OK = 0;
-    lastBme = 0 - delayTime;
-}
+CapteurEnv::CapteurEnv()
+{}
 
 CapteurEnv::~CapteurEnv()
 {}
@@ -28,10 +25,13 @@ CapteurEnv::~CapteurEnv()
 /// Intervale de mesure
 void CapteurEnv::init(uint16_t arg_delay_time)
 {
+    uint8_t nbTest = 10;        // 10 essais
+
     // suggested rate is 1/60Hz (1m)
     delayTime = arg_delay_time;        // in milliseconds
 
-    uint8_t nbTest = 10;            // 10 essais
+    device_OK = 0;
+    lastBme = 0 - delayTime;
 
     // Par défaut, l'état du capteur est "défaut" dans le constructeur
 
@@ -105,4 +105,13 @@ uint8_t CapteurEnv::lecture(sdata_env * data_env)
     return false;
 }
 
-//////////////////////////////////////////
+uint8_t CapteurEnv::capteur_OK()
+{
+    return device_OK;
+}
+
+uint32_t CapteurEnv::getAbsoluteHumidity()
+{
+    return absoluteHumidity;
+}
+    //////////////////////////////////////////

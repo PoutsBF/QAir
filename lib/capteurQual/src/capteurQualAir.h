@@ -24,10 +24,14 @@ private:
     uint8_t device_OK;
     void moyenneCO2(void);
 
+    unsigned long delayTime;        // délai entre les mesures
+    unsigned long lastDelay;        // Timer pour les délais entre mesures
+
 public:
     CapteurQualAir();
     ~CapteurQualAir();
 
-    uint8_t init();
-    uint8_t lecture();
+    void init(ulong _delayTime);
+    uint8_t lecture(sdata_env_qualite * data_env_qualite);
+    void setHumidity(uint32_t absolute_humidity);
 };
