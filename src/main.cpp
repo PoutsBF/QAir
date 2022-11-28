@@ -7,11 +7,8 @@
 
 #include <capteurEnv.h>
 #include <capteurQualAir.h>
-#include <StripLed.h>
-
-#include <Adafruit_GFX.h>
-// #include <FreeMono12pt7b.h>
-#include <Adafruit_SSD1306.h>
+#include <stripLed.h>
+#include <displayQAir.h>
 
 #include <Adafruit_Sensor.h>
 
@@ -24,27 +21,9 @@
 CapteurEnv capteurEnv;
 CapteurQualAir capteurQualAir;
 
-//---------------------------------------------------------
-// Gestion du SSD1306
-//
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-// The pins for I2C are defined by the Wire-library.
-// On an arduino UNO:       A4(SDA), A5(SCL)
-// On an arduino MEGA 2560: 20(SDA), 21(SCL)
-// On an arduino LEONARDO:   2(SDA),  3(SCL)
-#define SCREEN_WIDTH 128        // OLED display width, in pixels
-#define SCREEN_HEIGHT 64        // OLED display height, in pixels
-#define LOGO_HEIGHT 16
-#define LOGO_WIDTH 16
+StripLed stripled;
+DisplayQAir displayQAir;
 
-#define OLED_RESET 21              // Reset pin # (or -1 if sharing Arduino reset pin) @todo : modifier la patte !
-#define SCREEN_ADDRESS 0x3C        ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-uint8_t displayOK = 0;
-uint8_t initDisplay(void);
-void displayAffiche(sdata_env);
-void displayAffiche(sdata_env_qualite);
 
 /******************************************************************************
  *   Début du SETUP
@@ -59,12 +38,12 @@ void setup()
     Serial.println("Bonjour !");
 
     displayOK = initDisplay();
+
     capteurEnv.init(30000);
     capteurQualAir.init(10000);
 
-    Sti
+    stripled.init();
 
-    stripOK = initStrip();
 }
 
 /******************************************************************************
@@ -88,29 +67,11 @@ void loop()
     if(capteurQualAir.lecture(&data_env_qualite))
     {
         if (displayOK) displayAffiche(data_env_qualite);
+
+        stripled.afficheStrip(data_env_qualite.eCO2);
     }
 
-    afficheStrip(data_env_qualite.eCO2);
 
-    //    info_memoire();
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos)
-{
-    WheelPos = 255 - WheelPos;
-    if (WheelPos < 85)
-    {
-        return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-    }
-    if (WheelPos < 170)
-    {
-        WheelPos -= 85;
-        return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-    }
-    WheelPos -= 170;
-    return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
 /******************************************************************************
@@ -207,94 +168,4 @@ void displayAffiche(sdata_env_qualite data_env_qualite)
     display.setTextSize(1);        // Normal 1:1 pixel scale
     display.print("ppm eCO2");
     display.display();
-}
-
-//-----------------------------------------------------------------------------
-// Initialise les néopixels
-//
-uint8_t initStrip()
-{
-    strip.begin();                  // INITIALIZE NeoPixel strip object (REQUIRED)
-    strip.show();                   // Turn OFF all pixels ASAP
-    strip.setBrightness(50);        // Set BRIGHTNESS to about 1/5 (max = 255)
-
-    return true;
-}
-
-//-----------------------------------------------------------------------------
-// Fonction pour la couleur en fonction du niveau de CO2
-//
-void afficheStrip(uint16_t eCO2)
-{
-    static unsigned long delta = 500;
-    static unsigned long tempo = 0 - delta;
-    static uint8_t q = 0;
-    static uint32_t couleurStrip = 0;
-    static uint8_t nbLedStrip = 0;
-
-    strip.clear();
-    if (eCO2 < 750)
-    {
-        delta = 1000;
-        couleurStrip = 0x00FF00;
-        nbLedStrip = 1;
-    }
-    else if (eCO2 < 1000)
-    {
-        delta = 900;
-        couleurStrip = 0x3FDC04;
-        nbLedStrip = 2;
-    }
-    else if (eCO2 < 1250)
-    {
-        delta = 800;
-        couleurStrip = 0x79bd08;
-        nbLedStrip = 3;
-    }
-    else if (eCO2 < 1500)
-    {
-        delta = 800;
-        couleurStrip = 0xB39e0c;
-        nbLedStrip = 4;
-    }
-    else if (eCO2 < 2000)
-    {
-        delta = 700;
-        couleurStrip = 0xEd7f10;
-        nbLedStrip = 5;
-    }
-    else if (eCO2 < 2500)
-    {
-        delta = 700;
-        couleurStrip = 0xF44708;
-        nbLedStrip = 6;
-    }
-    else if (eCO2 < 3000)
-    {
-        delta = 600;
-        couleurStrip = 0xf92805;
-        nbLedStrip = 7;
-    }
-    else
-    {
-        delta = 500;
-        couleurStrip = 0xFF0000;
-        nbLedStrip = 7;
-    }
-
-    if (millis() - tempo > delta)
-    {
-        tempo = millis();
-
-        if (q >= (strip.numPixels() - nbLedStrip))
-            q = 0;
-        else
-            q++;
-
-        for (uint16_t i = 0; i < strip.numPixels(); i += 1 + strip.numPixels() - nbLedStrip)
-        {
-            strip.setPixelColor(i + q, couleurStrip);        // turn every third pixel on
-        }
-        strip.show();
-    }
 }
