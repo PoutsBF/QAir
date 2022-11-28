@@ -7,12 +7,11 @@
 
 #include <capteurEnv.h>
 #include <capteurQualAir.h>
+#include <StripLed.h>
 
 #include <Adafruit_GFX.h>
 // #include <FreeMono12pt7b.h>
 #include <Adafruit_SSD1306.h>
-
-#include <Adafruit_NeoPixel.h>
 
 #include <Adafruit_Sensor.h>
 
@@ -24,15 +23,6 @@
 //
 CapteurEnv capteurEnv;
 CapteurQualAir capteurQualAir;
-
-//---------------------------------------------------------
-// Configuration néopixel (strip)
-// Patte à connecter à définir @todo
-Adafruit_NeoPixel strip(8, 15, NEO_GRBW + NEO_KHZ800);
-uint8_t stripOK = 0;
-uint8_t initStrip();
-void afficheStrip(uint16_t eCO2);
-uint32_t Wheel(byte WheelPos);
 
 //---------------------------------------------------------
 // Gestion du SSD1306
@@ -62,8 +52,6 @@ void displayAffiche(sdata_env_qualite);
  ******************************************************************************/
 void setup()
 {
-    
-    configTime(0, 0, "pool.ntp.org");
     Serial.begin(115200);
 
     while ((!Serial) && (millis() < 5000));        
@@ -73,6 +61,8 @@ void setup()
     displayOK = initDisplay();
     capteurEnv.init(30000);
     capteurQualAir.init(10000);
+
+    Sti
 
     stripOK = initStrip();
 }
