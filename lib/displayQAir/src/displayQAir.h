@@ -1,3 +1,4 @@
+#pragma once 
 /******************************************************************************
     Librairie pour la gestion de l'affichage du module QAir 
 
@@ -10,6 +11,9 @@
 #include <Adafruit_GFX.h>
 // #include <FreeMono12pt7b.h>
 #include <Adafruit_SSD1306.h>
+
+#include <capteurEnv.h>
+#include <capteurQualAir.h>
 
 //---------------------------------------------------------
 // Gestion du SSD1306
@@ -26,18 +30,18 @@
 
 #define OLED_RESET 21              // Reset pin # (or -1 if sharing Arduino reset pin) @todo : modifier la patte !
 #define SCREEN_ADDRESS 0x3C        ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-
-uint8_t displayOK = 0;
-uint8_t initDisplay(void);
-void displayAffiche(sdata_env);
-void displayAffiche(sdata_env_qualite);
 
 class DisplayQAir
 {
 private:
-    /* data */
+    Adafruit_SSD1306 *display;
+    uint8_t device_OK;
+
 public:
     DisplayQAir(/* args */);
     ~DisplayQAir();
+
+    void init(void);
+    void displayAffiche(sdata_env);
+    void displayAffiche(sdata_env_qualite);
 };

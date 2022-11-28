@@ -1,3 +1,4 @@
+#pragma once 
 /******************************************************************************
 Librairie pour la gestion du capteur SGP30
 
