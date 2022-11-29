@@ -2,15 +2,10 @@
 
 #define DEBUG_SERIAL
 
-#include <SPI.h>
-#include <Wire.h>
-
 #include <capteurEnv.h>
 #include <capteurQualAir.h>
 #include <stripLed.h>
 #include <displayQAir.h>
-
-#include <Adafruit_Sensor.h>
 
 #include <WiFi.h>
 #include <FS.h>
@@ -52,7 +47,6 @@ void setup()
  ******************************************************************************/
 void loop()
 {
-    static unsigned long lastSgp = 0;
     static sdata_env_qualite data_env_qualite = {0};        // Stocke les données eCO2 et TCOV
     static sdata_env data_env = {0};
 
