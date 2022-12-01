@@ -1,3 +1,21 @@
+/******************************************************************************
+* Stéphane Lepoutère                                                  11-2022 *
+*                                   QAir                                      *
+*
+* Programme de surveillance de la qualité de l'air
+*   - lecture 
+*       - eCO2
+*       - TCOV
+*       - °C
+*       - %HR
+*           -> hygro absolue mg/m3
+*       - hPa
+*       - niveau batterie
+*   - Affichage sur SDD1306
+*   - Affichage sur site web
+*       - sous forme de webSocket
+******************************************************************************/
+
 #include <Arduino.h>
 
 #define DEBUG_SERIAL
@@ -6,6 +24,7 @@
 #include <capteurQualAir.h>
 #include <stripLed.h>
 #include <displayQAir.h>
+#include <supervAlim.h>
 
 #include <WiFi.h>
 #include <FS.h>
@@ -19,6 +38,7 @@ CapteurQualAir capteurQualAir;
 StripLed stripled;
 DisplayQAir displayQAir;
 
+SupervAlim supervAlim;
 
 /******************************************************************************
  *   Début du SETUP
