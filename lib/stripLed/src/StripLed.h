@@ -13,6 +13,11 @@ class StripLed
 private:
     Adafruit_NeoPixel strip;
     uint8_t device_ok;
+    unsigned long delta;
+    unsigned long tempo;
+    uint32_t couleurStrip;
+    uint8_t nbLedStrip;
+
     uint32_t Wheel(byte WheelPos);
 
 public:
@@ -21,4 +26,5 @@ public:
 
     void init(void);
     void afficheStrip(uint16_t eCO2);
+    void miseAJour(void);
 };
