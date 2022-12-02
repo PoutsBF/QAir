@@ -14,6 +14,30 @@ StripLed::StripLed(/* args */)
 StripLed::~StripLed()
 {}
 
+void StripLed::miseAJour()
+{
+    static uint8_t q = 0;
+    
+    if (millis() - tempo > delta)
+    {
+        tempo = millis();
+
+        if (q >= (strip.numPixels() - nbLedStrip))
+            q = 0;
+        else
+            q++;
+
+        for (uint16_t i = 0; i < strip.numPixels(); i += 1 + strip.numPixels() - nbLedStrip)
+        {
+            strip.setPixelColor(i + q, couleurStrip);        // turn every third pixel on
+        }
+        strip.show();
+    }
+}
+
+/// @brief 
+/// @param WheelPos 
+/// @return 
 uint32_t StripLed::Wheel(byte WheelPos)
 {
     WheelPos = 255 - WheelPos;
@@ -41,18 +65,18 @@ void StripLed::init()
     strip.setBrightness(50);        // Set BRIGHTNESS to about 1/5 (max = 255)
 
     device_ok = true;
+
+    delta = 500;
+    tempo = 0 - delta;
+
+    couleurStrip = 0;
+    nbLedStrip = 0;
 }
 
 /// @brief Fonction pour la couleur en fonction du niveau de CO2
 /// @param eCO2
 void StripLed::afficheStrip(uint16_t eCO2)
 {
-    static unsigned long delta = 500;
-    static unsigned long tempo = 0 - delta;
-    static uint8_t q = 0;
-    static uint32_t couleurStrip = 0;
-    static uint8_t nbLedStrip = 0;
-
     strip.clear();
 
     if (eCO2 < 750)
@@ -102,21 +126,5 @@ void StripLed::afficheStrip(uint16_t eCO2)
         delta = 500;
         couleurStrip = 0xFF0000;
         nbLedStrip = 7;
-    }
-
-    if (millis() - tempo > delta)
-    {
-        tempo = millis();
-
-        if (q >= (strip.numPixels() - nbLedStrip))
-            q = 0;
-        else
-            q++;
-
-        for (uint16_t i = 0; i < strip.numPixels(); i += 1 + strip.numPixels() - nbLedStrip)
-        {
-            strip.setPixelColor(i + q, couleurStrip);        // turn every third pixel on
-        }
-        strip.show();
     }
 }

@@ -59,7 +59,9 @@ void setup()
 
     stripled.init();
 
+    supervAlim.init(1000);
 }
+
 
 /******************************************************************************
  *   LOOP
@@ -84,8 +86,8 @@ void loop()
 
         stripled.afficheStrip(data_env_qualite.eCO2);
     }
-        displayQAir.displayAffiche(data_env_qualite);
 
-        stripled.afficheStrip(data_env_qualite.eCO2);
-    }
+    stripled.miseAJour();
+
+    supervAlim.lecture();
 }
