@@ -34,9 +34,9 @@ domReady(function () {
             connection.send("{couleur:" + couleur + "}");
         }
     }
-    $.farbtastic('#picker').linkTo(onCouleur);
 
-    function onSelectionMode() {
+    function onSelectionMode()
+    {
         if (connection.readyState === 1)
         {
             var choixMode = document.getElementById("idSelectionMode").selectedIndex;
@@ -49,20 +49,6 @@ domReady(function () {
             {
                 document.getElementById("affModeSelect").innerText = "pas de mode sélectionné";
             }
-        }
-    }
-    function onVitesse() {
-        if (connection.readyState === 1)
-        {
-            var vitesse = document.getElementById("idVitesse").value;
-            connection.send("{speed:" + vitesse + "}");
-        }
-    }
-    function onLuminosite() {
-        if (connection.readyState === 1)
-        {
-            var luminosite = document.getElementById("idLuminosite").value * 255 / 100;
-            connection.send("{lum:" + luminosite + "}");
         }
     }
 
@@ -151,19 +137,4 @@ domReady(function () {
             console.log(event.data);
         }
     };
-//----------------------- range -----------------------------------------------
-    var slider = new Slider('#idVitesse', {
-        formatter: function (value) {
-            return 'délai (ms): ' + value;
-        },
-        min: 1,
-        max: 2000
-    }).on("change", onVitesse);
-    var slider = new Slider('#idLuminosite', {
-        formatter: function (value) {
-            return '%: ' + value;
-        },
-        min: 1,
-        max: 100
-    }).on("change", onLuminosite);
 });  // fin domReady
