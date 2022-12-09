@@ -24,13 +24,14 @@
 
 <body>
 	<div class="container-fluid">
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+		<nav class="navbar navbar-expand-lg navbar-light bg-">
 
 			<button class="navbar-toggler" type="button" data-toggle="collapse"
-				data-target="#bs-example-navbar-collapse-1">
+				data-target="#bs-navbar-1" aria-controls="bs-navbar-1" aria-expanded="true">
 				<span class="navbar-toggler-icon"></span>
-			</button> <a class="navbar-brand" href="#">Pout's Environnement</a>
-			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			</button> 
+			<a class="navbar-brand" href="#">Pout's Environnement</a>
+			<div class="collapse navbar-collapse" id="bs-navbar-1">
 				<ul class="navbar-nav">
 					<li class="nav-item active">
 						<a class="nav-link" href="#">Link <span class="sr-only">(current)</span></a>
@@ -60,20 +61,105 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-md-2">température</div>
-			<div class="col-md-2">Hygrométrie</div>
-			<div class="col-md-2">Hygro absolue</div>
-			<div class="col-md-2">Pression</div>
-			<div class="col-md-2">eCO2</div>
-			<div class="col-md-2">TCOV</div>
+			<div class="col-md-2">
+				<div class="card bg-default">
+					<h5 class="card-header">
+						température
+					</h5>
+					<div class="card-body text-center">
+						<p class="card-text">
+							<span id="val_temp">20,0</span> °C 
+						</p>
+					</div>
+					<div class="card-footer">
+						Card footer
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="card bg-default">
+					<h5 class="card-header">
+						Hygrométrie
+					</h5>
+					<div class="card-body text-center">
+						<p class="card-text">
+							<span id="val_hygro">50</span> %HR
+						</p>
+					</div>
+					<div class="card-footer">
+						Card footer
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="card bg-default">
+					<h5 class="card-header">
+						Hygro absolue
+					</h5>
+					<div class="card-body text-center">
+						<p class="card-text">
+							<span id="val_hygroAbs">10</span> mg/m <sup>3</sup>
+						</p>
+					</div>
+					<div class="card-footer">
+						Card footer
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="card bg-default">
+					<h5 class="card-header">
+						Pression
+					</h5>
+					<div class="card-body text-center">
+						<p class="card-text">
+							<span id="val_pression">1012</span> hPa
+						</p>
+					</div>
+					<div class="card-footer">
+						Card footer
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="card bg-default">
+					<h5 class="card-header">
+						eCO2
+					</h5>
+					<div class="card-body text-center">
+						<p class="card-text">
+							<span id="val_eco2">400</span> ppm (0,4%)
+						</p>
+					</div>
+					<div class="card-footer">
+						Card footer
+					</div>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="card bg-default">
+					<h5 class="card-header">
+						TCOV
+					</h5>
+					<div class="card-body text-center">
+						<p class="card-text">
+							<span id="val_tcov">10</span> ppb
+						</p>
+					</div>
+					<div class="card-footer">
+						Card footer
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div class="row">
 			<div class="col-md-4">
 				<h3>
-					Infos
+					Informations de connexion
 				</h3>
-				<button id="btInfoConnection" type="button" class="btn btn-block btn-lg btn-danger" title="état...">
+				<button id="btInfoConnection" type="button" 
+						class="btn btn-block btn-lg btn-danger btn-sm" title="état...">
 					déconnecté
 				</button>
 				<p>

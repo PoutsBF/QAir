@@ -25,35 +25,18 @@ function hexToDec(hex) {
 domReady(function () {
     var idTimer;
     var connection = new WebSocket('ws://' + location.hostname + '/ws');
+
     //    var connection = new WebSocket('ws://' + location.hostname + ':81');
-    function onCouleur(color) {
-        if (connection.readyState === 1)
-        {
-            document.getElementById("idCouleur").value = color;
-            var couleur = hexToDec(color);
-            connection.send("{couleur:" + couleur + "}");
-        }
-    }
+    // function onCouleur(color) {
+    //     if (connection.readyState === 1)
+    //     {
+    //         document.getElementById("idCouleur").value = color;
+    //         var couleur = hexToDec(color);
+    //         connection.send("{couleur:" + couleur + "}");
+    //     }
+    // }
 
-    function onSelectionMode()
-    {
-        if (connection.readyState === 1)
-        {
-            var choixMode = document.getElementById("idSelectionMode").selectedIndex;
-            if (choixMode != -1)
-            {
-                connection.send("{mode:" + document.getElementById("idSelectionMode").selectedIndex + "}");
-                document.getElementById("affModeSelect").innerText = document.getElementById("idSelectionMode").options[choixMode].label;
-            }
-            else
-            {
-                document.getElementById("affModeSelect").innerText = "pas de mode sélectionné";
-            }
-        }
-    }
-
-    document.getElementById("idSelectionMode").addEventListener("change", onSelectionMode);
-    document.getElementById("idCouleur").addEventListener("change", onCouleur);
+    // document.getElementById("idCouleur").addEventListener("change", onCouleur);
 
     function onTimerWS()
     {
