@@ -67,32 +67,24 @@ uint8_t WebServeur::init()
     Serial.println(WiFi.localIP());
 #endif
 
-    server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(200, "text/plain", "Hello, world"); });
+    // server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+    //           { request->send(200, "text/plain", "Hello, world"); });
 
-    // Send a GET request to <IP>/get?message=<message>
-    server->on("/get", HTTP_GET, [](AsyncWebServerRequest *request)
-        {
-            String message;
-            if (request->hasParam(PARAM_MESSAGE)) {
-                message = request->getParam(PARAM_MESSAGE)->value();
-            } else {
-                message = "No message sent";
-            }
-            request->send(200, "text/plain", "Hello, GET: " + message); 
-        });
+    server->on("/heap", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+        char texte[128];
+        snprintf(texte, 128, "heap %d/%d, clients %d, dB %d",
+                 ESP.getFreeHeap(), 
+                 ESP.getHeapSize(),
+                //  ws.count(),
+                 WiFi.RSSI());
+        request->send(200, "text/plain", String(texte)); });
+    server->on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+        request->send(200, "text/plain", String("Reset en cours..."));
+        ESP.restart(); });
 
-    // Send a POST request to <IP>/post with a form field message set to <message>
-    server->on("/post", HTTP_POST, [](AsyncWebServerRequest *request)
-        {
-            String message;
-            if (request->hasParam(PARAM_MESSAGE, true)) {
-                message = request->getParam(PARAM_MESSAGE, true)->value();
-            } else {
-                message = "No message sent";
-            }
-            request->send(200, "text/plain", "Hello, POST: " + message); 
-        });
+    server->serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
 
     server->onNotFound(notFound);
 
