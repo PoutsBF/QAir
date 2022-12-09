@@ -14,17 +14,17 @@ Librairie pour la gestion du serveur web
 #endif
 #include <ESPAsyncWebServer.h>
 
-#include"configWeb.h"
-
 class WebServeur
 {
 private:
-    AsyncWebServer server;
+    AsyncWebServer *server;
 
-    const char *PARAM_MESSAGE = "message";
     /* data */
 public:
     WebServeur(/* args */);
     ~WebServeur();
+
+    uint8_t init(void);
+    static void notFound(AsyncWebServerRequest *request);
 };
 

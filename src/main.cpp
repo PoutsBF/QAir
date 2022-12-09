@@ -20,11 +20,14 @@
 
 #define DEBUG_SERIAL
 
+// #include <configWeb.h>
+
 #include <capteurEnv.h>
 #include <capteurQualAir.h>
 #include <stripLed.h>
 #include <displayQAir.h>
 #include <supervAlim.h>
+#include <webServeur.h>
 
 #include <WiFi.h>
 #include <FS.h>
@@ -39,6 +42,7 @@ StripLed stripled;
 DisplayQAir displayQAir;
 
 SupervAlim supervAlim;
+WebServeur webServeur;
 
 /******************************************************************************
  *   Début du SETUP
@@ -53,13 +57,20 @@ void setup()
     Serial.println("Bonjour !");
 
     displayQAir.init();
+    Serial.println("display");
 
     capteurEnv.init(30000);
+    Serial.println("bme280");
     capteurQualAir.init(10000);
+    Serial.println("sgp30");
 
     stripled.init();
+    Serial.println("neopixel");
 
     supervAlim.init(1000);
+    Serial.println("alim'");
+
+    webServeur.init();
 }
 
 
