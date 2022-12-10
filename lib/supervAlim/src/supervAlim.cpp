@@ -17,13 +17,22 @@ uint8_t SupervAlim::lecture()
 {
     if (millis() - lastTime >= delayTime)
     {
+        
+
         return true;
     }
     return false;
+}
+
+uint8_t SupervAlim::valeur()
+{
+    return _valeur;
 }
 
 void SupervAlim::init(ulong _delayTime)
 {
     delayTime = _delayTime;
     lastTime = 0 - delayTime;
+
+    _valeur = 0;
 }
