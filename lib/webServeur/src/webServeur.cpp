@@ -8,16 +8,13 @@ Librairie pour la gestion du serveur web
 #include <webServeur.h>
 
 #define DEBUG_SERIAL
-
-#ifdef ESP32
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include <SPIFFS.h>
-#elif defined(ESP8266)
-#include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
+#ifdef DEBUG_SERIAL
+    #define DBG
+#else
+    #define DBG //
 #endif
-#include <ESPAsyncWebServer.h>
+
+#include <ArduinoJson.h>
 
 #include <configWeb.h>
 #include <jsonDoc.h>
@@ -42,13 +39,13 @@ uint8_t WebServeur::init()
 
     doc = new DynamicJsonDocument(1024);
 
-    doc[JS_temperature] = "-";
-    doc[JS_eco2] = "-";
-    doc[JS_hygroAbs] = "-";
-    doc[JS_hygroRel] = "-";
-    doc[JS_niveauBatt] = "-";
-    doc[JS_pression] = "-";
-    doc[JS_tcov] = "-";
+    (*doc)["val_temp"] = "-";
+    (*doc)[JS_eco2] = "-";
+    (*doc)[JS_hygroAbs] = "-";
+    (*doc)[JS_hygroRel] = "-";
+    (*doc)[JS_niveauBatt] = "-";
+    (*doc)[JS_pression] = "-";
+    (*doc)[JS_tcov] = "-";
 
     // Initialize SPIFFS
     if (!SPIFFS.begin(true))
@@ -74,9 +71,8 @@ uint8_t WebServeur::init()
     WiFi.begin(YOUR_WIFI_SSID, YOUR_WIFI_PASSWD);
     if (WiFi.waitForConnectResult() != WL_CONNECTED)
     {
-#ifdef DEBUG_SERIAL
-        Serial.printf("WiFi Failed!\n");
-#endif
+
+        DBG Serial.printf("WiFi Failed!\n");
         return false;
     }
 
@@ -93,20 +89,12 @@ uint8_t WebServeur::init()
                      { client->send("hello!", NULL, millis(), 1000); });
     server->addHandler(events);
 
-    server->on("/heap", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-        char texte[128];
-        snprintf(texte, 128, "heap %d/%d, clients %d, dB %d",
-                 ESP.getFreeHeap(), 
-                 ESP.getHeapSize(),
-                //  ws.count(),
-                 WiFi.RSSI());
-        request->send(200, "text/plain", String(texte)); });
+    //---------------------------------
+    // Réponse à une url /heap 
+    // renvoie des informations de base du serveur
+    server->on("/heap", HTTP_GET, heap);
 
-    server->on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-        request->send(200, "text/plain", String("Reset en cours..."));
-        ESP.restart(); });
+    server->on("/reset", HTTP_GET, reset);
 
     server->serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
 
@@ -119,22 +107,28 @@ uint8_t WebServeur::init()
     return true;
 }
 
+/// @brief Renvoie de page d'erreur '404'
+/// @param request : client pour la réponse
 void WebServeur::notFound(AsyncWebServerRequest *request)
 {
     request->send(404, "text/plain", "Not found");
 }
 
+/// @brief Gestionnaire du web socket
+/// @param server 
+/// @param client 
+/// @param type 
+/// @param arg 
+/// @param data 
+/// @param len 
 void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
-//    extern CValeurs valeurs;
 
     if (type == WS_EVT_CONNECT)
     {
-#ifdef DEBUG_SERIAL
-        Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
-#endif        
-        //        valeurs.envoie(client->id());
-        //        valeurs.envoie(client->id());
+        DBG Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
+
+        send(client->id());
     }
     else if (type == WS_EVT_DISCONNECT)
     {
@@ -224,4 +218,73 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
             }
         }
     }
+}
+
+/// @brief Met à jour une donnée et l'envoie à tout le monde
+/// @param key
+/// @param valeur
+void WebServeur::maj_data(const char *key, const char *valeur)
+{
+    (*doc)[key] = valeur;
+    DBG serializeJson(doc, Serial);
+}
+
+/// @brief Met à jour une donnée et l'envoie à tout le monde
+/// @param key
+/// @param valeur
+void WebServeur::maj_data(const char *key, float valeur)
+{
+    (*doc)[key] = valeur;
+    DBG serializeJson(doc, Serial);
+}
+
+/// @brief Met à jour une donnée et l'envoie à tout le monde
+/// @param key
+/// @param valeur
+void WebServeur::maj_data(const char *key, uint16_t valeur)
+{
+    (*doc)[key] = valeur;
+    DBG serializeJson(doc, Serial);
+}
+
+/// @brief Met à jour une donnée et l'envoie à tout le monde
+/// @param key
+/// @param valeur
+void WebServeur::maj_data(const char *key, uint32_t valeur)
+{
+    (*doc)[key] = valeur;
+    DBG serializeJson(doc, Serial);
+}
+
+/// @brief Envoie aux clients le contenu de la variable json
+/// @param id 0 pour tous les clients, sinon le référentiel du client
+void WebServeur::send(uint32_t id)
+{
+    char envoie[1024];
+
+    serializeJson(doc, envoie, 1024);
+    ws->text(id, envoie);
+}
+
+/// @brief Affiche les données d'état de l'ESP 32, du wifi et du web socket
+/// @param request
+void WebServeur::heap(AsyncWebServerRequest *request)
+{
+    char texte[128];
+    snprintf(texte, 128, "heap %d/%d, clients %d, dB %d",
+             ESP.getFreeHeap(),
+             ESP.getHeapSize(),
+             ws->count(),
+             WiFi.RSSI());
+    request->send(200, "text/plain", String(texte));
+}
+
+/// @brief Redémarre le module
+/// @param request 
+void WebServeur::reset(AsyncWebServerRequest *request)
+{
+    Serial.println("-------------x>  redémarrage du module  <x-------------");
+    request->send(200, "text/plain", String("Reset en cours..."));
+    // TODO : code javascript pour tester le redémarrage avec un timer ?
+    ESP.restart();
 }

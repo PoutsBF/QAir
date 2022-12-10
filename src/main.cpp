@@ -17,6 +17,7 @@
 ******************************************************************************/
 
 #include <Arduino.h>
+#include <stdio.h>
 
 #define DEBUG_SERIAL
 
@@ -89,6 +90,11 @@ void loop()
 
         // Affiche les données sur l'écran lcd s'il est correctement initialisé
         displayQAir.displayAffiche(data_env);
+        webServeur.maj_data(JS_temperature, data_env.temperature);
+        webServeur.maj_data(JS_hygroRel, data_env.humidite);
+        webServeur.maj_data(JS_hygroAbs, data_env.hygroAbsolue);
+        webServeur.maj_data(JS_pression, data_env.pression);
+        webServeur.send(0); 
     }
 
     if(capteurQualAir.lecture(&data_env_qualite))
@@ -96,9 +102,17 @@ void loop()
         displayQAir.displayAffiche(data_env_qualite);
 
         stripled.afficheStrip(data_env_qualite.eCO2);
+
+        webServeur.maj_data(JS_eco2, data_env_qualite.eCO2);
+        webServeur.maj_data(JS_tcov, data_env_qualite.TVOC);
+        webServeur.send(0);
+    }
+
+    if (supervAlim.lecture());
+    {
+        webServeur.maj_data(JS_niveauBatt, (uint16_t) supervAlim.valeur());
+        webServeur.send(0);
     }
 
     stripled.miseAJour();
-
-    supervAlim.lecture();
 }
