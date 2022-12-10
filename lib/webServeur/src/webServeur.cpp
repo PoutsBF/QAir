@@ -4,6 +4,7 @@ Librairie pour la gestion du serveur web
 ******************************************************************************/
 
 #include <Arduino.h>
+#include <stdio.h>
 #include <webServeur.h>
 
 #define DEBUG_SERIAL
@@ -19,6 +20,7 @@ Librairie pour la gestion du serveur web
 #include <ESPAsyncWebServer.h>
 
 #include <configWeb.h>
+#include <jsonDoc.h>
 
 const char *PARAM_MESSAGE = "message";
 
@@ -28,11 +30,25 @@ WebServeur::WebServeur(/* args */)
 WebServeur::~WebServeur()
 {}
 
+/// @brief initialise par défaut le serveur web, le web socket et
+///             la variable json avec les valeurs envoyées aux
+///             pages connectées
+/// @return ok ou non ?
 uint8_t WebServeur::init()
 {
     server = new AsyncWebServer(80);
     ws = new AsyncWebSocket("/ws");
     events = new AsyncEventSource("/events");
+
+    doc = new DynamicJsonDocument(1024);
+
+    doc[JS_temperature] = "-";
+    doc[JS_eco2] = "-";
+    doc[JS_hygroAbs] = "-";
+    doc[JS_hygroRel] = "-";
+    doc[JS_niveauBatt] = "-";
+    doc[JS_pression] = "-";
+    doc[JS_tcov] = "-";
 
     // Initialize SPIFFS
     if (!SPIFFS.begin(true))
@@ -98,6 +114,8 @@ uint8_t WebServeur::init()
 
     server->begin();
 
+    ws->text(0, "qrfq");
+
     return true;
 }
 
@@ -112,21 +130,29 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
 
     if (type == WS_EVT_CONNECT)
     {
+#ifdef DEBUG_SERIAL
         Serial.printf("ws[%s][%u] connect\n", server->url(), client->id());
-//        valeurs.envoie(client->id());
-//        valeurs.envoie(client->id());
+#endif        
+        //        valeurs.envoie(client->id());
+        //        valeurs.envoie(client->id());
     }
     else if (type == WS_EVT_DISCONNECT)
     {
+#ifdef DEBUG_SERIAL
         Serial.printf("ws[%s][%u] disconnect\n", server->url(), client->id());
+#endif
     }
     else if (type == WS_EVT_ERROR)
     {
+#ifdef DEBUG_SERIAL
         Serial.printf("ws[%s][%u] error(%u): %s\n", server->url(), client->id(), *((uint16_t *)arg), (char *)data);
+#endif
     }
     else if (type == WS_EVT_PONG)
     {
+#ifdef DEBUG_SERIAL
         Serial.printf("ws[%s][%u] pong[%u]: %s\n", server->url(), client->id(), len, (len) ? (char *)data : "");
+#endif
     }
     else if (type == WS_EVT_DATA)
     {
@@ -135,8 +161,9 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
         if (info->final && info->index == 0 && info->len == len)
         {
             // the whole message is in a single frame and we got all of it's data
+#ifdef DEBUG_SERIAL
             Serial.printf("ws[%s][%u] %s-message[%llu]: ", server->url(), client->id(), (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
-
+#endif
             if (info->opcode == WS_TEXT)
             {
                 for (size_t i = 0; i < info->len; i++)
@@ -153,7 +180,9 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
                     msg += buff;
                 }
             }
+#ifdef DEBUG_SERIAL
             Serial.printf("%s\n", msg.c_str());
+#endif
         }
         else
         {
