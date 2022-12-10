@@ -15,9 +15,11 @@ SupervAlim::~SupervAlim()
 
 uint8_t SupervAlim::lecture()
 {
-    if (millis() - lastTime >= delayTime)
+    if (millis() - lastDelay >= delayTime)
     {
-        
+        lastDelay = millis();
+
+        _valeur = analogRead(VBAT);
 
         return true;
     }
@@ -32,7 +34,7 @@ uint8_t SupervAlim::valeur()
 void SupervAlim::init(ulong _delayTime)
 {
     delayTime = _delayTime;
-    lastTime = 0 - delayTime;
+    lastDelay = 0 - delayTime;
 
     _valeur = 0;
 }

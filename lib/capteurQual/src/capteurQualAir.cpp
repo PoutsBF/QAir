@@ -105,8 +105,9 @@ uint8_t CapteurQualAir::lecture(sdata_env_qualite * data_env_qualite)
             }
             // Serial.println();
         }
+        return true;
     }
-    return true;
+    return false;
 }
 
 void CapteurQualAir::moyenneCO2()

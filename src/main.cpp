@@ -68,7 +68,7 @@ void setup()
     stripled.init();
     Serial.println("neopixel");
 
-    supervAlim.init(1000);
+    supervAlim.init(60000);
     Serial.println("alim'");
 
     webServeur.init();
@@ -108,7 +108,7 @@ void loop()
         webServeur.send(0);
     }
 
-    if (supervAlim.lecture());
+    if (supervAlim.lecture())
     {
         webServeur.maj_data(JS_niveauBatt, (uint16_t) supervAlim.valeur());
         webServeur.send(0);

@@ -21,6 +21,10 @@ Librairie pour la gestion du serveur web
 
 const char *PARAM_MESSAGE = "message";
 
+// Déclaration des variables statiques
+AsyncWebSocket *WebServeur::ws;
+DynamicJsonDocument *WebServeur::doc;
+
 WebServeur::WebServeur(/* args */)
 {}
 
@@ -83,7 +87,7 @@ uint8_t WebServeur::init()
 
     // Configuration des évènements web server
     ws->onEvent(onWsEvent);
-    server->addHandler(ws);
+    server->addHandler(WebServeur::ws);
 
     events->onConnect([](AsyncEventSourceClient *client)
                      { client->send("hello!", NULL, millis(), 1000); });
@@ -101,8 +105,6 @@ uint8_t WebServeur::init()
     server->onNotFound(notFound);
 
     server->begin();
-
-    ws->text(0, "qrfq");
 
     return true;
 }
@@ -226,7 +228,8 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
 void WebServeur::maj_data(const char *key, const char *valeur)
 {
     (*doc)[key] = valeur;
-    DBG serializeJson(doc, Serial);
+    DBG Serial.printf("\nvaleur : %s", key);
+    DBG serializeJson(*doc, Serial);
 }
 
 /// @brief Met à jour une donnée et l'envoie à tout le monde
@@ -235,7 +238,8 @@ void WebServeur::maj_data(const char *key, const char *valeur)
 void WebServeur::maj_data(const char *key, float valeur)
 {
     (*doc)[key] = valeur;
-    DBG serializeJson(doc, Serial);
+    DBG Serial.printf("\nvaleur : %s", key);
+    DBG serializeJson(*doc, Serial);
 }
 
 /// @brief Met à jour une donnée et l'envoie à tout le monde
@@ -244,7 +248,8 @@ void WebServeur::maj_data(const char *key, float valeur)
 void WebServeur::maj_data(const char *key, uint16_t valeur)
 {
     (*doc)[key] = valeur;
-    DBG serializeJson(doc, Serial);
+    DBG Serial.printf("\nvaleur : %s", key);
+    DBG serializeJson(*doc, Serial);
 }
 
 /// @brief Met à jour une donnée et l'envoie à tout le monde
@@ -253,7 +258,8 @@ void WebServeur::maj_data(const char *key, uint16_t valeur)
 void WebServeur::maj_data(const char *key, uint32_t valeur)
 {
     (*doc)[key] = valeur;
-    DBG serializeJson(doc, Serial);
+    DBG Serial.printf("\nvaleur : %s", key);
+    DBG serializeJson(*doc, Serial);
 }
 
 /// @brief Envoie aux clients le contenu de la variable json
@@ -262,7 +268,7 @@ void WebServeur::send(uint32_t id)
 {
     char envoie[1024];
 
-    serializeJson(doc, envoie, 1024);
+    serializeJson(*doc, envoie, 1024);
     ws->text(id, envoie);
 }
 

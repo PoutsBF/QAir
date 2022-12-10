@@ -31,7 +31,7 @@ void CapteurEnv::init(uint16_t arg_delay_time)
     delayTime = arg_delay_time;        // in milliseconds
 
     device_OK = 0;
-    lastBme = 0 - delayTime;
+    lastDelay = 0 - delayTime;
 
     // Par défaut, l'état du capteur est "défaut" dans le constructeur
 
@@ -88,9 +88,9 @@ void CapteurEnv::calcAbsoluteHumidity(float temperature, float humidity)
 /// @return 
 uint8_t CapteurEnv::lecture(sdata_env * data_env)
 {    
-    if ((millis() - lastBme >= delayTime) && device_OK)
+    if ((millis() - lastDelay >= delayTime) && device_OK)
     {
-        lastBme = millis();
+        lastDelay = millis();
 
         // Only needed in forced mode! In normal mode, you can remove the next line.
         bme.takeForcedMeasurement();        // has no effect in normal mode
