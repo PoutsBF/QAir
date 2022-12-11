@@ -110,9 +110,13 @@ void loop()
 
     if (supervAlim.lecture())
     {
-        webServeur.maj_data(JS_niveauBatt, (uint16_t) supervAlim.valeur());
+        webServeur.maj_data(JS_battNiveau, (uint16_t)supervAlim.niveau());
+        webServeur.maj_data(JS_battTension, supervAlim.valeur());
+
         webServeur.send(0);
     }
 
     stripled.miseAJour();
+
+    webServeur.cleanupClients();
 }

@@ -8,6 +8,14 @@ function domReady(f) {
   }
 }
 
+function connectWebSocket()
+{
+    if (connection.readyState == 3)
+    {
+        connection.connection();
+        }
+}
+
 function hexToDec(hex) {
     var result = 0, digitValue;
     hex = hex.toLowerCase();
@@ -25,18 +33,13 @@ function hexToDec(hex) {
 domReady(function () {
     var idTimer;
     var connection = new WebSocket('ws://' + location.hostname + '/ws');
-
     //    var connection = new WebSocket('ws://' + location.hostname + ':81');
-    // function onCouleur(color) {
-    //     if (connection.readyState === 1)
-    //     {
-    //         document.getElementById("idCouleur").value = color;
-    //         var couleur = hexToDec(color);
-    //         connection.send("{couleur:" + couleur + "}");
-    //     }
-    // }
 
-    // document.getElementById("idCouleur").addEventListener("change", onCouleur);
+    var el = document.getElementById(btInfoConnection);
+    if (el != null)
+    {
+        el.onclick = connectWebSocket;
+    }
 
     function onTimerWS()
     {
@@ -63,6 +66,7 @@ domReady(function () {
     
     connection.onopen = function (evt)
     {
+        console.log('WebSocket ouverture', evt);
         connection.send('{\"Connect\":\"' + new Date() + '\"}');
         document.getElementById("btInfoConnection").classList.remove("btn-danger");
         document.getElementById("btInfoConnection").classList.add("btn-success");
@@ -86,33 +90,43 @@ domReady(function () {
 
     connection.onmessage = function (event)
     {
+        console.log('WebSocket : message', event);
+        document.getElementById("logText").innerHTML += event.data + "<br/>";
+
         try
         {
             var msg = JSON.parse(event.data);
-            if (msg.hasOwnProperty("modes"))
+
+            Object.keys(msg).forEach(function (key)
             {
-                var text = "";
-                msg["modes"].forEach(function (element) {
-                    text += "<option>" + element + "</option>";
-                });
-                document.getElementById("idSelectionMode").innerHTML = text;
-            }
-            if (msg.hasOwnProperty("mode"))
-            {
-                document.getElementById("idSelectionMode").value = msg["mode"];
-            }
-            if (msg.hasOwnProperty("speed"))
-            {
-                document.getElementById("idVitesse").value = msg["speed"];
-            }
-            if (msg.hasOwnProperty("lum"))
-            {
-                document.getElementById("idLuminosite").value = msg["lum"];
-            }
-            if (msg.hasOwnProperty("couleur"))
-            {
-                $('#picker').farbtastic('#idColor').color = msg["couleur"];
-            }
+                switch (key)
+                {
+                    case "val_temp":
+                        document.getElementById(key).innerHTML = msg[key].toFixed(1);
+                        break;
+                    case "val_hygro":
+                        document.getElementById(key).innerHTML = msg[key].toFixed(0);
+                        break;
+                    case "val_hygroAbs":
+                        document.getElementById(key).innerHTML = msg[key];
+                        break;
+                    case "val_pression":
+                        document.getElementById(key).innerHTML = msg[key].toFixed(0);
+                        break;
+                    case "val_eco2":
+                        document.getElementById(key).innerHTML = msg[key];
+                        break;
+                    case "val_tcov":
+                        document.getElementById(key).innerHTML = msg[key];
+                        break;
+                    case "val_batt":
+                        document.getElementById(key).innerHTML = msg[key];
+                        break;
+                    case "val_battVolt":
+                        document.getElementById(key).innerHTML = msg[key].toFixed(2);
+                        break;
+                }
+             });
         }
         catch (e)
         {

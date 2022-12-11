@@ -43,12 +43,13 @@ uint8_t WebServeur::init()
 
     doc = new DynamicJsonDocument(1024);
 
-    (*doc)["val_temp"] = "-";
-    (*doc)[JS_eco2] = "-";
+    (*doc)[JS_temperature] = "-";
     (*doc)[JS_hygroAbs] = "-";
     (*doc)[JS_hygroRel] = "-";
-    (*doc)[JS_niveauBatt] = "-";
+    (*doc)[JS_battNiveau] = "-";
+    (*doc)[JS_battTension] = "-";
     (*doc)[JS_pression] = "-";
+    (*doc)[JS_eco2] = "-";
     (*doc)[JS_tcov] = "-";
 
     // Initialize SPIFFS
@@ -228,8 +229,8 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
 void WebServeur::maj_data(const char *key, const char *valeur)
 {
     (*doc)[key] = valeur;
-    DBG Serial.printf("\nvaleur : %s", key);
     DBG serializeJson(*doc, Serial);
+    DBG Serial.println("");
 }
 
 /// @brief Met à jour une donnée et l'envoie à tout le monde
@@ -238,8 +239,8 @@ void WebServeur::maj_data(const char *key, const char *valeur)
 void WebServeur::maj_data(const char *key, float valeur)
 {
     (*doc)[key] = valeur;
-    DBG Serial.printf("\nvaleur : %s", key);
     DBG serializeJson(*doc, Serial);
+    DBG Serial.println("");
 }
 
 /// @brief Met à jour une donnée et l'envoie à tout le monde
@@ -248,8 +249,8 @@ void WebServeur::maj_data(const char *key, float valeur)
 void WebServeur::maj_data(const char *key, uint16_t valeur)
 {
     (*doc)[key] = valeur;
-    DBG Serial.printf("\nvaleur : %s", key);
     DBG serializeJson(*doc, Serial);
+    DBG Serial.println("");
 }
 
 /// @brief Met à jour une donnée et l'envoie à tout le monde
@@ -258,8 +259,13 @@ void WebServeur::maj_data(const char *key, uint16_t valeur)
 void WebServeur::maj_data(const char *key, uint32_t valeur)
 {
     (*doc)[key] = valeur;
-    DBG Serial.printf("\nvaleur : %s", key);
     DBG serializeJson(*doc, Serial);
+    DBG Serial.println("");
+}
+
+void WebServeur::cleanupClients(void)
+{
+    ws->cleanupClients();
 }
 
 /// @brief Envoie aux clients le contenu de la variable json
@@ -269,7 +275,17 @@ void WebServeur::send(uint32_t id)
     char envoie[1024];
 
     serializeJson(*doc, envoie, 1024);
-    ws->text(id, envoie);
+    if (id == 0)
+    {
+        if (ws->count() != 0)
+        {
+            ws->textAll(envoie);
+        }
+    }
+    else
+    {
+        ws->text(id, envoie);
+    }
 }
 
 /// @brief Affiche les données d'état de l'ESP 32, du wifi et du web socket

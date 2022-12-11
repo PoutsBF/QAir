@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.ino": "cpp",
+        "*.md": "markdown",
+        "bitset": "cpp",
+        "memory": "cpp",
+        "random": "cpp",
+        "optional": "cpp"
+    }
+}

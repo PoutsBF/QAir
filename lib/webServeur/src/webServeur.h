@@ -44,5 +44,7 @@ public:
     void maj_data(const char *key, uint16_t valeur);
     void maj_data(const char *key, uint32_t valeur);
     static void send(uint32_t id);
+
+    void cleanupClients(void);
 };
 
