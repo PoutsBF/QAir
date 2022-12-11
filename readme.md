@@ -10,6 +10,7 @@ Stéphane Lepoutère
 - réglage du RTC à partir d'un serveur NTP
 - Archivage des données dans une EEPROM type 24Cxx sur une structure à définir
 - Affichage de courbes dans la page HTML à base de l'historique
+- Capteur de particules
 - ...
 
 ## Objets en librairie
