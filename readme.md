@@ -26,6 +26,7 @@ Stéphane Lepoutère
 ### FreeRTOS
 
 - [FreeRTOS](https://www.freertos.org/index.html)
+- [Notions](http://tvaira.free.fr/esp32/esp32-freertos.html)
 
 ### La gestion du webserveur par le proejet ESPHome
 
