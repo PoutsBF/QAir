@@ -8,14 +8,6 @@ function domReady(f) {
   }
 }
 
-function connectWebSocket()
-{
-    if (connection.readyState == 3)
-    {
-        connection.connection();
-        }
-}
-
 function hexToDec(hex) {
     var result = 0, digitValue;
     hex = hex.toLowerCase();
@@ -60,6 +52,9 @@ domReady(function () {
         case 3:
               document.getElementById("btInfoConnection").innerHTML = "déconnecté";
               document.getElementById("btInfoConnection").setAttribute("title", "Connexion fermée ou ne pouvant être ouverte");          
+              delete connection;
+              connection = new WebSocket('ws://' + location.hostname + '/ws');
+
           break;
       };
     }
