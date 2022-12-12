@@ -33,6 +33,12 @@
 #include <WiFi.h>
 #include <FS.h>
 
+// temp
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
+
 //---------------------------------------------------------
 // Gestion du capteur environnement
 //
@@ -65,13 +71,18 @@ void setup()
     capteurQualAir.init(10000);
     Serial.println("sgp30");
 
-    stripled.init();
+    stripled.init(13);
     Serial.println("neopixel");
 
     supervAlim.init(60000);
     Serial.println("alim'");
 
     webServeur.init();
+
+//temp
+    timeClient.begin();
+    timeClient.update();
+    timeClient.getEpochTime();
 }
 
 

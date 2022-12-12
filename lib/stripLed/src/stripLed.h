@@ -24,7 +24,7 @@ public:
     StripLed(/* args */);
     ~StripLed();
 
-    void init(void);
+    void init(uint8_t pin);
     void afficheStrip(uint16_t eCO2);
     void miseAJour(void);
 };

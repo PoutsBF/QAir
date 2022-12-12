@@ -14,6 +14,7 @@ StripLed::StripLed(/* args */)
 StripLed::~StripLed()
 {}
 
+/// @brief Met à jour l'affichage des leds néopixels.
 void StripLed::miseAJour()
 {
     static uint8_t q = 0;
@@ -27,9 +28,13 @@ void StripLed::miseAJour()
         else
             q++;
 
-        for (uint16_t i = 0; i < strip.numPixels(); i += 1 + strip.numPixels() - nbLedStrip)
+        strip.clear();
+
+        for (uint16_t i = 0; 
+                        i < strip.numPixels(); 
+                        i += 1 + strip.numPixels() - nbLedStrip)
         {
-            strip.setPixelColor(i + q, couleurStrip);        // turn every third pixel on
+            strip.setPixelColor(i + q, couleurStrip);      
         }
         strip.show();
     }
@@ -54,15 +59,15 @@ uint32_t StripLed::Wheel(byte WheelPos)
     return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
-void StripLed::init()
+void StripLed::init(uint8_t pin)
 {
-    strip.setPin(15);        // A MODIFIER !!
-    strip.updateType(NEO_GRBW + NEO_KHZ800);
-    strip.updateLength(8);
+    strip.setPin(pin);        // A MODIFIER !!
+    strip.updateType(NEO_GRB + NEO_KHZ800);
+    strip.updateLength(16);
 
     strip.begin();                  // INITIALIZE NeoPixel strip object (REQUIRED)
     strip.show();                   // Turn OFF all pixels ASAP
-    strip.setBrightness(50);        // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.setBrightness(10);        // Set BRIGHTNESS to about 1/5 (max = 255)
 
     delta = 500;
     tempo = 0 - delta;
@@ -81,49 +86,49 @@ void StripLed::afficheStrip(uint16_t eCO2)
 
     if (eCO2 < 750)
     {
-        delta = 1000;
+        delta = 100;
         couleurStrip = 0x00FF00;
         nbLedStrip = 1;
     }
     else if (eCO2 < 1000)
     {
-        delta = 900;
+        delta = 200;
         couleurStrip = 0x3FDC04;
         nbLedStrip = 2;
     }
     else if (eCO2 < 1250)
     {
-        delta = 800;
+        delta = 300;
         couleurStrip = 0x79bd08;
         nbLedStrip = 3;
     }
     else if (eCO2 < 1500)
     {
-        delta = 800;
+        delta = 400;
         couleurStrip = 0xB39e0c;
         nbLedStrip = 4;
     }
     else if (eCO2 < 2000)
     {
-        delta = 700;
+        delta = 500;
         couleurStrip = 0xEd7f10;
         nbLedStrip = 5;
     }
     else if (eCO2 < 2500)
     {
-        delta = 700;
+        delta = 600;
         couleurStrip = 0xF44708;
         nbLedStrip = 6;
     }
     else if (eCO2 < 3000)
     {
-        delta = 600;
+        delta = 700;
         couleurStrip = 0xf92805;
         nbLedStrip = 7;
     }
     else
     {
-        delta = 500;
+        delta = 1000;
         couleurStrip = 0xFF0000;
         nbLedStrip = 7;
     }
