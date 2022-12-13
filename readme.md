@@ -23,6 +23,22 @@ Stéphane Lepoutère
 - Supervision de l'alimentation (batterie LiPo)
 - WebServeur (site + websocket)
 
+## Capteurs & cartes
+
+### Carte HUZZAH32 Feather (Adafruit)
+[site adafruit](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather)
+
+### BME280
+[site seeed](https://wiki.seeedstudio.com/Grove-Barometer_Sensor-BME280/)
+
+### SGP30
+[site seeed](https://wiki.seeedstudio.com/Grove-VOC_and_eCO2_Gas_Sensor-SGP30/)
+![image](https://user-images.githubusercontent.com/39980882/207302893-bed7a8db-c22b-4edd-afba-85ea77c8563f.png)
+
+
+### HM3301 qualité de l'air
+[site seeed](https://wiki.seeedstudio.com/Grove-Laser_PM2.5_Sensor-HM3301/)
+
 ## Sources
 
 ### FreeRTOS
