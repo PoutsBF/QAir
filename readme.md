@@ -3,6 +3,9 @@
 Stéphane Lepoutère
 (c)2021
 
+- [ ] Case non cochée
+- [x] Case cochée
+
 ## 12/2022 reprise développement sur ESP32, nettoyage, encapsulation...
 
 ## A faire
