@@ -72,3 +72,10 @@ Stéphane Lepoutère
 - [l'ADC sur ESP32](https://microcontrollerslab.com/adc-esp32-measuring-voltage-example/)
 - [Calibration de l'ADC de l'ESP32](https://github.com/e-tinkers/esp32-adc-calibrate)
 
+## Résultat (site responsive)
+
+![Capture horizontale](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.31.22.png)
+
+![capture verticale 1/2](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.30.48.png)
+
+![capture verticale 2/2](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.31.05.png)
