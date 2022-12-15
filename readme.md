@@ -76,6 +76,4 @@ Stéphane Lepoutère
 
 ![Capture horizontale](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.31.22.png)
 
-![capture verticale 1/2](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.30.48.png)
-
-![capture verticale 2/2](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.31.05.png)
+| ![capture verticale 1/2](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.30.48.png) | ![capture verticale 2/2](/doc/images/Capture%20d%E2%80%99%C3%A9cran%202022-12-15%20%C3%A0%2018.31.05.png) |
