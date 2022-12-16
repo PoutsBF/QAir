@@ -29,12 +29,7 @@
 #include <displayQAir.h>
 #include <supervAlim.h>
 #include <webServeur.h>
-
-// temp
-#include <NTPClient.h>
-#include <WiFiUdp.h>
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
+#include <gestionTemps.h>
 
 //---------------------------------------------------------
 // Gestion du capteur environnement
@@ -47,6 +42,8 @@ DisplayQAir displayQAir;
 
 SupervAlim supervAlim;
 WebServeur webServeur;
+
+GestionTemps gestionTemps;
 
 /******************************************************************************
  *   Début du SETUP
@@ -75,11 +72,6 @@ void setup()
     Serial.println("alim'");
 
     webServeur.init();
-
-//temp
-    timeClient.begin();
-    timeClient.update();
-    timeClient.getEpochTime();
 }
 
 
@@ -123,6 +115,9 @@ void loop()
 
         webServeur.send(0);
     }
+
+    // temp
+//    webServeur.maj_data("timeStp", (uint32_t) gestionTemps.lecture());
 
     webServeur.cleanupClients();
 }
