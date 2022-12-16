@@ -7,36 +7,46 @@ Librairie pour la gestion ddes néoleds
 
 #include <stripLed.h>
 
-/// @brief Initialise les néopixels
-StripLed::StripLed(/* args */)
-{}
-
-StripLed::~StripLed()
-{}
+/// @brief Constructeur & destructeur // non utilisé
+StripLed::StripLed() {}
+StripLed::~StripLed() {}
 
 /// @brief Met à jour l'affichage des leds néopixels.
-void StripLed::miseAJour()
+/// Tache infinie avec délai
+void StripLed::tacheMAJ(void *pvParameters)
 {
-    static uint8_t q = 0;
+    // Pointeur sur la tache appelante
+    StripLed * moi = (StripLed *) pvParameters;
+    // Variable sur la position dans le cycle
+    uint8_t q = 0;
 
-    if (millis() - tempo > delta)
+    // Délai en millisecondes
+    TickType_t xDelay = moi->delta / portTICK_PERIOD_MS;
+
+    // Boucle infinie
+    while (true)
     {
-        tempo = millis();
-
-        if (q >= (strip.numPixels() - nbLedStrip))
+        // Fait tourner la led de 0 à ledmax et ramène à 0
+        if (q >= (moi->strip.numPixels() - moi->nbLedStrip))
             q = 0;
         else
             q++;
 
-        strip.clear();
+        // Nettoie le ruban de led
+        moi->strip.clear();
 
+        // Affiche les leds adéquates
         for (uint16_t i = 0; 
-                        i < strip.numPixels(); 
-                        i += 1 + strip.numPixels() - nbLedStrip)
+                        i < moi->strip.numPixels(); 
+                        i += 1 + moi->strip.numPixels() - moi->nbLedStrip)
         {
-            strip.setPixelColor(i + q, couleurStrip);      
+            moi->strip.setPixelColor(i + q, moi->couleurStrip);
         }
-        strip.show();
+        // Affiche sur le ruban
+        moi->strip.show();
+
+        // Pause avant relance
+        vTaskDelay(xDelay);
     }
 }
 
@@ -59,29 +69,41 @@ uint32_t StripLed::Wheel(byte WheelPos)
     return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
+/// @brief Initialisation de l'objet de gestion du ruban
+/// @param pin patte sur laquelle est connectée le ruban
 void StripLed::init(uint8_t pin)
-{
-    strip.setPin(pin);        // A MODIFIER !!
-    strip.updateType(NEO_GRB + NEO_KHZ800);
-    strip.updateLength(16);
+{    
+    strip.setPin(pin);                      // Configure la patte
+    strip.updateType(NEO_GRB + NEO_KHZ800); // Type de led et fréquence
+    strip.updateLength(16);                 // Nombre de led
 
-    strip.begin();                  // INITIALIZE NeoPixel strip object (REQUIRED)
-    strip.show();                   // Turn OFF all pixels ASAP
-    strip.setBrightness(10);        // Set BRIGHTNESS to about 1/5 (max = 255)
+    strip.begin();              // Initialise l'objet NeoPixel
+    strip.show();               // Eteint le ruban
+    strip.setBrightness(10);    // Configure la luminosité
 
-    delta = 500;
-    tempo = 0 - delta;
+    delta = 100;                // Délai d'avance
 
-    couleurStrip = 0;
-    nbLedStrip = 0;
+    couleurStrip = 0;           // Couleur par défaut
+    nbLedStrip = 0;             // Nombre de led par défaut
 
-    device_ok = true;
+    device_ok = true;           // Valide l'initialisation de l'objet
+
+    // Démarrer la tâche de mise à jour 
+      xTaskCreatePinnedToCore(
+            (TaskFunction_t) tacheMAJ,              // Task function. 
+            "strip Task",             // name of task. 
+            2048,                   // Stack size of task 
+            this,                   // parameter of the task 
+            2,                      // priority of the task 
+            &id_tache_ntc,          // Task handle to keep track of created task 
+            0 );                    // sur CPU1 
 }
 
 /// @brief Fonction pour la couleur en fonction du niveau de CO2
 /// @param eCO2
 void StripLed::afficheStrip(uint16_t eCO2)
 {
+    // Efface le ruban
     strip.clear();
 
     if (eCO2 < 750)

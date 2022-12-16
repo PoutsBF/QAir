@@ -30,9 +30,6 @@
 #include <supervAlim.h>
 #include <webServeur.h>
 
-#include <WiFi.h>
-#include <FS.h>
-
 // temp
 #include <NTPClient.h>
 #include <WiFiUdp.h>
@@ -126,8 +123,6 @@ void loop()
 
         webServeur.send(0);
     }
-
-    stripled.miseAJour();
 
     webServeur.cleanupClients();
 }
