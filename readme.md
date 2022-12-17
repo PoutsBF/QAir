@@ -34,7 +34,8 @@ Stéphane Lepoutère
 ## Capteurs & cartes
 
 ### Carte HUZZAH32 Feather (Adafruit)
-![Huzzah32](/doc/images/feather.jpg){ width=200px}
+|:--:|
+|![Huzzah32](/doc/images/feather.jpg)|
 
 [site adafruit](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather)
 
