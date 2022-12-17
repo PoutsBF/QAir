@@ -11,12 +11,12 @@ Stéphane Lepoutère
 ## A faire
 
 - réglage du RTC à partir d'un serveur NTP
-[x] connexion serveur NTP
-[ ] Programmation RTC, lecture RTC, client NTP au démarrage puis suppression
+- [x] connexion serveur NTP
+- [ ] Programmation RTC, lecture RTC, client NTP au démarrage puis suppression
 - Gestion des charges batteries basses (sleep, bilan énergétique...)
-[x] passage en deepSleep si VCC \< \(3,3V + Vdpo 0,3V \)
-[ ] Bilan énergétique
-[ ] Essai passage en lightSleep \(sans redémarrage)
+- [x] passage en deepSleep si VCC \< \(3,3V + Vdpo 0,3V \)
+- [ ] Bilan énergétique
+- [ ] Essai passage en lightSleep \(sans redémarrage)
 - Archivage des données dans une EEPROM type 24Cxx sur une structure à définir
 - Affichage de courbes dans la page HTML à base de l'historique
 - Capteur de particules
