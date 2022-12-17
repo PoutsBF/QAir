@@ -53,8 +53,6 @@ void GestionTemps::tacheMAJ(void *pvParameters)
         moi->timeClient->update();
         moi->epochTime->set(moi->timeClient->getEpochTime());
 
-        Serial.printf("Heure : %d", moi->epochTime->get());
-
         moi->chgt = true;
 
         // Pause avant relance

@@ -20,10 +20,14 @@ Stéphane Lepoutère
 ## Objets en librairie
 
 - capteur environnemental (BME280 t° / %HR / pression atmosphérique)
+-- tâche à mettre en oeuvre
 - capteur qualité d'air (SGP30 eCO2 / TCOV)
+-- tâche à mettre en oeuvre
 - Afficheur OLed SSD1306
 - Bandeau néopixel 8 leds
+--  géré par une tâche FreeRTOS
 - Supervision de l'alimentation (batterie LiPo)
+--  géré par une tâche FreeRTOS
 - WebServeur (site + websocket)
 
 ## Capteurs & cartes
