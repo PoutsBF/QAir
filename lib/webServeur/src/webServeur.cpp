@@ -223,45 +223,45 @@ void WebServeur::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
     }
 }
 
-/// @brief Met à jour une donnée et l'envoie à tout le monde
-/// @param key
-/// @param valeur
-void WebServeur::maj_data(const char *key, const char *valeur)
-{
-    (*doc)[key] = valeur;
-    DBG serializeJson(*doc, Serial);
-    DBG Serial.println("");
-}
+// /// @brief Met à jour une donnée et l'envoie à tout le monde
+// /// @param key
+// /// @param valeur
+// void WebServeur::maj_data(const char *key, const char *valeur)
+// {
+//     (*doc)[key] = valeur;
+//     DBG serializeJson(*doc, Serial);
+//     DBG Serial.println("");
+// }
 
-/// @brief Met à jour une donnée et l'envoie à tout le monde
-/// @param key
-/// @param valeur
-void WebServeur::maj_data(const char *key, float valeur)
-{
-    (*doc)[key] = valeur;
-    DBG serializeJson(*doc, Serial);
-    DBG Serial.println("");
-}
+// /// @brief Met à jour une donnée et l'envoie à tout le monde
+// /// @param key
+// /// @param valeur
+// void WebServeur::maj_data(const char *key, float valeur)
+// {
+//     (*doc)[key] = valeur;
+//     DBG serializeJson(*doc, Serial);
+//     DBG Serial.println("");
+// }
 
-/// @brief Met à jour une donnée et l'envoie à tout le monde
-/// @param key
-/// @param valeur
-void WebServeur::maj_data(const char *key, uint16_t valeur)
-{
-    (*doc)[key] = valeur;
-    DBG serializeJson(*doc, Serial);
-    DBG Serial.println("");
-}
+// /// @brief Met à jour une donnée et l'envoie à tout le monde
+// /// @param key
+// /// @param valeur
+// void WebServeur::maj_data(const char *key, uint16_t valeur)
+// {
+//     (*doc)[key] = valeur;
+//     DBG serializeJson(*doc, Serial);
+//     DBG Serial.println("");
+// }
 
-/// @brief Met à jour une donnée et l'envoie à tout le monde
-/// @param key
-/// @param valeur
-void WebServeur::maj_data(const char *key, uint32_t valeur)
-{
-    (*doc)[key] = valeur;
-    DBG serializeJson(*doc, Serial);
-    DBG Serial.println("");
-}
+// /// @brief Met à jour une donnée et l'envoie à tout le monde
+// /// @param key
+// /// @param valeur
+// void WebServeur::maj_data(const char *key, uint32_t valeur)
+// {
+//     (*doc)[key] = valeur;
+//     DBG serializeJson(*doc, Serial);
+//     DBG Serial.println("");
+// }
 
 void WebServeur::cleanupClients(void)
 {

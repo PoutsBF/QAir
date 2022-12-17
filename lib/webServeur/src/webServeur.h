@@ -19,6 +19,7 @@ Librairie pour la gestion du serveur web
 #include <ArduinoJson.h>
 #include <jsonDoc.h>
 
+
 class WebServeur
 {
 private:
@@ -39,10 +40,19 @@ public:
     ~WebServeur();
 
     uint8_t init(void);
-    void maj_data(const char *key, const char *valeur);
-    void maj_data(const char *key, float valeur);
-    void maj_data(const char *key, uint16_t valeur);
-    void maj_data(const char *key, uint32_t valeur);
+
+    template <typename T>
+    void maj_data(const char *key, T valeur)
+    {
+        (*doc)[key] = valeur;
+        serializeJson(*doc, Serial);
+        Serial.println("");
+    }
+
+    // void maj_data(const char *key, const char *valeur);
+    // void maj_data(const char *key, float valeur);
+    // void maj_data(const char *key, uint16_t valeur);
+    // void maj_data(const char *key, uint32_t valeur);
     static void send(uint32_t id);
 
     void cleanupClients(void);
