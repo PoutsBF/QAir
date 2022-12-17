@@ -34,15 +34,18 @@ Stéphane Lepoutère
 ## Capteurs & cartes
 
 ### Carte HUZZAH32 Feather (Adafruit)
+![Huzzah32](/doc/images/feather.jpg)
 [site adafruit](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather)
 
 ### BME280
-[site seeed](https://wiki.seeedstudio.com/Grove-Barometer_Sensor-BME280/)
+![BME280](/doc/images/BME280.jpg)[site seeed](https://wiki.seeedstudio.com/Grove-Barometer_Sensor-BME280/)
 
 ### SGP30
+![SGP30](/doc/images/SGP30.jpg)
 [site seeed](https://wiki.seeedstudio.com/Grove-VOC_and_eCO2_Gas_Sensor-SGP30/)
 
 ### HM3301 qualité de l'air
+![HM3301](/doc/images/HM3301.jpg)
 [site seeed](https://wiki.seeedstudio.com/Grove-Laser_PM2.5_Sensor-HM3301/)
 
 ## Sources
