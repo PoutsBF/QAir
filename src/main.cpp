@@ -117,7 +117,7 @@ void loop()
     }
 
     // temp
-//    webServeur.maj_data("timeStp", (uint32_t) gestionTemps.lecture());
+//    webServeur.maj_data("timeStp", gestionTemps.lecture());
 
     webServeur.cleanupClients();
 }
