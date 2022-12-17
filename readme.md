@@ -33,12 +33,10 @@ Stéphane Lepoutère
 
 ## Capteurs & cartes
 
-### Carte HUZZAH32 Feather (Adafruit)
-| |
+|### Carte HUZZAH32 Feather (Adafruit)|
 |:--:|
 |![Huzzah32](/doc/images/feather.jpg)|
-
-[site adafruit](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather)
+|[site adafruit](https://learn.adafruit.com/adafruit-huzzah32-esp32-feather)|
 
 ### BME280
 ![BME280](/doc/images/BME280.jpg = 200x)
