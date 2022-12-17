@@ -1,3 +1,4 @@
+#pragma once
 /******************************************************************************
 Librairie pour la gestion d'une variable partagée entre tâches
 
@@ -23,6 +24,7 @@ template <typename T>
 VariableShared<T>::VariableShared(T _valeur)
 {
     variable = _valeur;
+    xMutex = xSemaphoreCreateMutex ( ) ;
 }
 
 template <typename T>

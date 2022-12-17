@@ -23,6 +23,8 @@
 
 // #include <configWeb.h>
 
+#include <variableShared.h>
+
 #include <capteurEnv.h>
 #include <capteurQualAir.h>
 #include <stripLed.h>
@@ -71,9 +73,11 @@ void setup()
     supervAlim.init(60000);
     Serial.println("alim'");
 
-    webServeur.init();
-}
 
+    webServeur.init();
+
+    gestionTemps.init();
+}
 
 /******************************************************************************
  *   LOOP
@@ -116,8 +120,11 @@ void loop()
         webServeur.send(0);
     }
 
-    // temp
-//    webServeur.maj_data("timeStp", gestionTemps.lecture());
+    if(gestionTemps.lecture())
+    {
+        webServeur.maj_data("timeStp", gestionTemps.get());
+        webServeur.send(0);
+    }
 
     webServeur.cleanupClients();
 }

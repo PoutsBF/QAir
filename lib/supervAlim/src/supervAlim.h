@@ -5,21 +5,24 @@ Librairie pour la supervision de l'alimentation
 
 ******************************************************************************/
 
-#include<Arduino.h>
+#include <Arduino.h>
+
+#include <variableShared.h>
 
 // Entrée A13-I35 : ADC1_CH7 – GPIO35
 #define VBAT A13
-
-
 
 class SupervAlim
 {
 private:
     unsigned long delayTime;        // délai entre les mesures
-    unsigned long lastDelay;          // Timer pour les délais entre mesures
+    uint8_t chgt;                   // Indicateur du changement de valeur
 
-    float _valeur;               // Tension en volt
-    uint8_t _niveau;                 // Niveau en %
+    VariableShared<float> * _valeur;    // Tension en volt
+    VariableShared<uint8_t> * _niveau;  // Niveau en %
+
+    TaskHandle_t id_tache;
+    static void tacheMAJ(void *pvParameter);
 
 public:
     /// @brief non utilisé
