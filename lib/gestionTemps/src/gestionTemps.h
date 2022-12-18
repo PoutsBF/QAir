@@ -15,6 +15,8 @@ Librairie pour la gestion ddes néoleds
 
 #include <variableShared.h>
 
+#include <RTClib.h>
+
 class GestionTemps
 {
 private:
