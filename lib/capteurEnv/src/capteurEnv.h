@@ -8,6 +8,8 @@ Librairie pour la gestion du capteur BME280
 
 #include <Adafruit_BME280.h>
 
+#include <variableShared.h>
+
 #define SEALEVELPRESSURE_HPA (1013.25)
 
 //---------------------------------------------------------
@@ -27,21 +29,30 @@ class CapteurEnv
 private:
     Adafruit_BME280 bme;        // I2C
     uint8_t device_OK;          // Etat du capteur
-    uint32_t absoluteHumidity;          // Valeur en mg/m3 sur dernière mesure
 
     unsigned long delayTime;            // délai entre les mesures
-    unsigned long lastDelay;       // Timer pour les délais entre mesures
+    uint8_t chgt;
 
     // calcul de l'humidité absolue
-    void calcAbsoluteHumidity(float temperature, float humidity);
+    static uint32_t calcAbsoluteHumidity(float temperature, float humidity);
 
-    /* data */
+    VariableShared<float> * _temperature;        // Heure au format 1970 + nb secondes
+    VariableShared<float> * _humidite;        // Heure au format 1970 + nb secondes
+    VariableShared<float> * _pression;        // Heure au format 1970 + nb secondes
+    VariableShared<uint32_t> * _hygroAbsolue;        // Heure au format 1970 + nb secondes
+
+    TaskHandle_t id_tache;                       // Handle de la tache de maj du ntc
+    static void tacheMAJ(void *pvParameters);        // tache de maj du ntc
+
 public:
     CapteurEnv();
     ~CapteurEnv();
 
     uint8_t capteur_OK();
     void init(uint16_t arg_delay_time);
-    uint8_t lecture(sdata_env *);
+    uint8_t lecture();
+    void get(sdata_env * t_data_env);
+    void set(sdata_env t_data_env);
+
     uint32_t getAbsoluteHumidity();
 };

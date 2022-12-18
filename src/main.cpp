@@ -88,8 +88,9 @@ void loop()
     static sdata_env_qualite data_env_qualite = {0};        // Stocke les données eCO2 et TCOV
     static sdata_env data_env = {0};
 
-    if(capteurEnv.lecture(&data_env))
+    if(capteurEnv.lecture())
     {
+        capteurEnv.get(&data_env);
         capteurQualAir.setHumidity(data_env.hygroAbsolue);
 
         // Affiche les données sur l'écran lcd s'il est correctement initialisé

@@ -64,6 +64,8 @@ void SupervAlim::tacheMAJ(void *pvParameter)
         {
             t_niveau = 10;        // Inutile, just for fun
             // Passe en sommeil profond, avec pour seule sortie le reset
+            Serial.println("---------- Passage en veille ---------");
+            Serial.printf("Tension : %.2fV", t_valeur);
             esp_deep_sleep_start();
         }
         // Découle le niveau de tension
