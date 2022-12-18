@@ -57,7 +57,8 @@ void setup()
 
     while ((!Serial) && (millis() < 5000));        
 
-    Serial.println("Bonjour !");
+    Serial.println("-- Stéphane Lepoutère ----- 2022 --");
+    Serial.println("-- Mesure de la qualité de l'air --");
 
     displayQAir.init();
     Serial.println("display");
@@ -87,6 +88,7 @@ void loop()
 {
     static sdata_env_qualite data_env_qualite = {0};        // Stocke les données eCO2 et TCOV
     static sdata_env data_env = {0};
+    uint8_t changement = false;
 
     if(capteurEnv.lecture())
     {
@@ -99,11 +101,15 @@ void loop()
         webServeur.maj_data(JS_hygroRel, data_env.humidite);
         webServeur.maj_data(JS_hygroAbs, data_env.hygroAbsolue);
         webServeur.maj_data(JS_pression, data_env.pression);
-        webServeur.send(0); 
+        webServeur.send(0);
+
+        changement = true;
     }
 
-    if(capteurQualAir.lecture(&data_env_qualite))
+    if(capteurQualAir.lecture())
     {
+        capteurQualAir.get(&data_env_qualite);
+        
         displayQAir.displayAffiche(data_env_qualite);
 
         stripled.afficheStrip(data_env_qualite.eCO2);
@@ -111,6 +117,8 @@ void loop()
         webServeur.maj_data(JS_eco2, data_env_qualite.eCO2);
         webServeur.maj_data(JS_tcov, data_env_qualite.TVOC);
         webServeur.send(0);
+
+        changement = true;
     }
 
     if (supervAlim.lecture())
@@ -119,11 +127,13 @@ void loop()
         webServeur.maj_data(JS_battTension, supervAlim.valeur());
 
         webServeur.send(0);
+
+        changement = true;
     }
 
-    if(gestionTemps.lecture())
+    if (changement)
     {
-        webServeur.maj_data("timeStp", gestionTemps.get());
+        webServeur.maj_data(JS_TimeStamp, gestionTemps.get());
         webServeur.send(0);
     }
 

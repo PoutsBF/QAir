@@ -8,6 +8,7 @@ Librairie pour la gestion du capteur SGP30
 
 #include <Adafruit_SGP30.h>
 
+#include <variableShared.h>
 
 //---------------------------------------------------------
 // Fonctions et variables pour la gestion du capteur SGP30
@@ -21,18 +22,27 @@ struct sdata_env_qualite
 class CapteurQualAir
 {
 private:
-    Adafruit_SGP30 sgp;
-    uint8_t device_OK;
+    Adafruit_SGP30 sgp;             // Objet pour la gestion du capteur SGP30
+    uint8_t _device_OK;
+
+    VariableShared <uint16_t> * _eCO2;
+    VariableShared <uint16_t> * _TVOC;
+
     void moyenneCO2(void);
 
-    unsigned long delayTime;        // délai entre les mesures
-    unsigned long lastDelay;        // Timer pour les délais entre mesures
+    unsigned long _delayTime;        // délai entre les mesures
+    uint8_t _chgt;                   // Indicateur d'une mise à jour
+
+    TaskHandle_t id_tache;                       // Handle de la tache de maj du ntc
+    static void tacheMAJ(void *pvParameters);        // tache de maj du ntc
 
 public:
-    CapteurQualAir();
-    ~CapteurQualAir();
+    CapteurQualAir() {}
+    ~CapteurQualAir() {}
 
     void init(ulong _delayTime);
-    uint8_t lecture(sdata_env_qualite * data_env_qualite);
+    uint8_t lecture();
+    void get(sdata_env_qualite *data_env_qualite);
+
     void setHumidity(uint32_t absolute_humidity);
 };

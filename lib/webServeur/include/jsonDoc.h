@@ -12,6 +12,7 @@ Librairie pour la gestion du serveur web
 #define JS_tcov "val_tcov"
 #define JS_eco2 "val_eco2"
 #define JS_battTension "val_battVolt"
+#define JS_TimeStamp "tmStamp"
 // #define JS_ ""
 // #define JS_ ""
 // #define JS_ ""

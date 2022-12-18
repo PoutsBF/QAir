@@ -16,30 +16,17 @@
 #include <Adafruit_BME280.h>
 
 /******************************************************************************
-    Constructeurs & destructeurs
-******************************************************************************/
-CapteurQualAir::CapteurQualAir()
-{
-    device_OK = 0;
-}
-
-CapteurQualAir::~CapteurQualAir()
-{
-}
-
-/******************************************************************************
     Méthodes
 ******************************************************************************/
 
 /// @brief 
 /// @param _delayTime 
-void CapteurQualAir::init(ulong _delayTime)
+void CapteurQualAir::init(ulong delayTime)
 {    
     uint8_t nbTest = 10;            // 10 essais
 
-    delayTime = _delayTime;     // Sauvegarde le délai sélectionné
-    device_OK = 0;              // état de la connexion au SGP30, état inversé
-    lastDelay = 0 - delayTime;      //Première lecture
+    _delayTime = delayTime;     // Sauvegarde le délai sélectionné
+    _device_OK = 0;              // état de la connexion au SGP30, état inversé
 
     //-------------------------------------------------------------------------
     // Démarrage du SGP30
@@ -51,10 +38,10 @@ void CapteurQualAir::init(ulong _delayTime)
         // Délai avant d'agir
         delay(200);
         // Teste la connexion avec le BME280
-        device_OK = sgp.begin();
-    } while (!device_OK && nbTest--);
+        _device_OK = sgp.begin();
+    } while (!_device_OK && nbTest--);
 
-    if (device_OK)
+    if (!_device_OK)
     {
 #ifdef DEBUG_SERIAL
         Serial.println("Could not find a valid SGP30 sensor, check wiring!");
@@ -69,31 +56,54 @@ void CapteurQualAir::init(ulong _delayTime)
     Serial.println(sgp.serialnumber[2], HEX);
 #endif
 
-    return;
+    _eCO2 = new VariableShared<uint16_t>(0);
+    _TVOC = new VariableShared<uint16_t>(0);
+
+    _chgt = 0;
+
+    // Démarrer la tâche de mise à jour
+    xTaskCreatePinnedToCore(
+        (TaskFunction_t)tacheMAJ,        // Task function.
+        "qual Task",                     // name of task.
+        2048,                            // Stack size of task
+        this,                            // parameter of the task
+        2,                               // priority of the task
+        &id_tache,                       // Task handle to keep track of created task
+        0);                              // sur CPU1
 }
 
-/// @brief 
-/// @param data_env_qualite 
-/// @return 
-uint8_t CapteurQualAir::lecture(sdata_env_qualite * data_env_qualite)
+/// @brief Met à jour l'affichage des leds néopixels.
+/// Tache infinie avec délai
+void CapteurQualAir::tacheMAJ(void *pvParameters)
 {
-    if (millis() - lastDelay >= delayTime)        // toutes les secondes
+    //-------- calcul filtre K = 0,5
+    uint16_t fn_1 = 0;
+
+    // Pointeur sur la tache appelante
+    CapteurQualAir *moi = (CapteurQualAir *)pvParameters;
+
+    // Délai en millisecondes
+    TickType_t xDelay = moi->_delayTime / portTICK_PERIOD_MS;
+
+    // Boucle infinie
+    while (true)
     {
-        lastDelay = millis();
-        if (!sgp.IAQmeasure())
+        if (!moi->sgp.IAQmeasure())
         {
             Serial.println("Measurement failed");
         }
         else
         {
-            //-------- calcul filtre K = 0,5
-            static uint16_t fn_1 = 0;
+            uint16_t vtemp;
 
-            data_env_qualite->eCO2 = (fn_1 >> 1) + (sgp.eCO2 >> 1);        // K = 0,5 donc décalage de 1 pour division par 2
-            fn_1 = data_env_qualite->eCO2;
-            data_env_qualite->TVOC = sgp.TVOC;
+            // K = 0,5 donc décalage de 1 pour division par 2
+            vtemp = (moi->sgp.eCO2 + fn_1) >> 1;
 
-            if (!sgp.IAQmeasureRaw())
+            moi->_eCO2->set(vtemp);
+            fn_1 = vtemp;
+            moi->_TVOC->set(moi->sgp.TVOC);
+
+            if (!moi->sgp.IAQmeasureRaw())
             {
 #ifdef DEBUG_SERIAL
                 Serial.println("Raw Measurement failed");
@@ -101,13 +111,34 @@ uint8_t CapteurQualAir::lecture(sdata_env_qualite * data_env_qualite)
             }
             else
             {
-                moyenneCO2();
+                moi->moyenneCO2();
             }
             // Serial.println();
         }
+
+        moi->_chgt = true;
+        // Pause avant relance
+        vTaskDelay(xDelay);
+    }
+}
+
+/// @brief 
+/// @param data_env_qualite 
+/// @return 
+uint8_t CapteurQualAir::lecture()
+{
+    if (_chgt)
+    {
+        _chgt = false;
         return true;
     }
     return false;
+}
+
+void CapteurQualAir::get(sdata_env_qualite *data_env_qualite)
+{
+    data_env_qualite->eCO2 = _eCO2->get();
+    data_env_qualite->TVOC = _TVOC->get();
 }
 
 void CapteurQualAir::moyenneCO2()
