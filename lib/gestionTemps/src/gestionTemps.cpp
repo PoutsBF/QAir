@@ -19,6 +19,9 @@ void GestionTemps::init(void)
     ntpUDP = new WiFiUDP;
     timeClient = new NTPClient(*ntpUDP, "europe.pool.ntp.org",3600);
 
+    rtc.lostPower();
+    // rtc.adjust()
+
     timeClient->begin();
 
     epochTime = new VariableShared<ulong>(0);

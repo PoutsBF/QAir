@@ -22,6 +22,7 @@ class GestionTemps
 private:
     WiFiUDP *ntpUDP;            // Connecteur UDP
     NTPClient *timeClient;      // Objet pour la gestion du ntp
+    RTC_DS3231 rtc;
 
     unsigned long delta;        // Délai entre 2 appels
     uint8_t chgt;               // Indicateur d'une mise à jour
