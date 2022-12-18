@@ -1,12 +1,11 @@
 # QAir / surveillance de la qualité de l'air
 
-Stéphane Lepoutère
+[Stéphane Lepoutère](https://www.linkedin.com/in/st%C3%A9phane-lepout%C3%A8re-403a01b1/)
 (c)2021
 
-- [ ] Case non cochée
-- [x] Case cochée
-
 ## 12/2022 reprise développement sur ESP32, nettoyage, encapsulation...
+
+Mon objectif : travailler l'encapsulation, l'utilisation des templates, les tâches et sémaphores...
 
 ## A faire
 
