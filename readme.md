@@ -12,6 +12,7 @@ Mon objectif : travailler l'encapsulation, l'utilisation des templates, les tâc
 - réglage du RTC à partir d'un serveur NTP
 - [x] connexion serveur NTP
 - [ ] Programmation RTC, lecture RTC, client NTP au démarrage puis suppression
+- [ ] changement orientation : tâche NTC lancée une fois au démarrage
 - Gestion des charges batteries basses (sleep, bilan énergétique...)
 - [x] passage en deepSleep si VCC \< \(3,3V + Vdpo 0,3V \)
 - [ ] Bilan énergétique

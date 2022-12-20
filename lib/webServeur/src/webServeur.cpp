@@ -7,7 +7,7 @@ Librairie pour la gestion du serveur web
 #include <stdio.h>
 #include <webServeur.h>
 
-#define DEBUG_SERIAL
+//#define DEBUG_SERIAL
 #ifdef DEBUG_SERIAL
     #define DBG
 #else

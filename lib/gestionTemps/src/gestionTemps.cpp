@@ -16,51 +16,72 @@ Librairie pour la gestion ddes néoleds
 /// @param  
 void GestionTemps::init(void)
 {
-    ntpUDP = new WiFiUDP;
-    timeClient = new NTPClient(*ntpUDP, "europe.pool.ntp.org",3600);
-
-    rtc.lostPower();
-    // rtc.adjust()
-
-    timeClient->begin();
+    if(!rtc.begin())
+    {
+        Serial.println("RTC non trouvé...");
+        _device_ok = false;
+    }
+    _device_ok = true;
 
     epochTime = new VariableShared<ulong>(0);
-    chgt = 0;
 
-    delta = 30000;
-
-    // Démarrer la tâche de mise à jour
+    // Démarrer la tâche de mise à jour du NTC
     xTaskCreatePinnedToCore(
-        (TaskFunction_t)tacheMAJ,        // Task function.
-        "ntp Task",                    // name of task.
+        (TaskFunction_t)reglageRTC,        // Task function.
+        "ntp Task",                      // name of task.
         2048,                            // Stack size of task
         this,                            // parameter of the task
         2,                               // priority of the task
         &id_tache_ntc,                   // Task handle to keep track of created task
-        0);                              // sur CPU1
+        0);                              // sur CPU1    
 }
 
-/// @brief Met à jour l'affichage des leds néopixels.
-/// Tache infinie avec délai
-void GestionTemps::tacheMAJ(void *pvParameters)
+void GestionTemps::tacheRTC(void *pvParameters)
 {
     // Pointeur sur la tache appelante
     GestionTemps *moi = (GestionTemps *)pvParameters;
 
     // Délai en millisecondes
-    TickType_t xDelay = moi->delta / portTICK_PERIOD_MS;
+    // TickType_t xDelay = moi->_delayTime / portTICK_PERIOD_MS;
 
-    // Boucle infinie
-    while (true)
+    while(true)
     {
-        moi->timeClient->update();
-        moi->epochTime->set(moi->timeClient->getEpochTime());
 
-        moi->chgt = true;
-
-        // Pause avant relance
-        vTaskDelay(xDelay);
+        
     }
+}
+
+/// @brief Met à jour l'affichage des leds néopixels.
+/// Tache infinie avec délai
+void GestionTemps::reglageRTC(void *pvParameters)
+{
+    WiFiUDP *ntpUDP;              // Connecteur UDP
+    NTPClient *timeClient;        // Objet pour la gestion du ntp
+    DateTime datemaj;
+
+    // Pointeur sur la tache appelante
+    GestionTemps *moi = (GestionTemps *)pvParameters;
+
+    ntpUDP = new WiFiUDP;
+    timeClient = new NTPClient(*ntpUDP, "europe.pool.ntp.org", 3600);
+
+    timeClient->begin();
+
+    timeClient->update();
+
+    moi->rtc.adjust(DateTime(timeClient->getEpochTime()));
+
+    Serial.print("ntc / epochtime :");
+    Serial.println(moi->epochTime->get());
+
+    Serial.printf("rtc : %s\n", DateTime(moi->rtc.now()).timestamp().c_str());
+
+    // todo : mettre le RTC à l'heure avec le résultat du NTC
+
+    delete ntpUDP;
+    delete timeClient;
+
+    vTaskDelete(NULL);
 }
 
 /// @brief Regarde si une nouvelle valeur est arrivée
@@ -78,7 +99,8 @@ uint8_t GestionTemps::lecture(void)
 
 /// @brief Renvoie la valeur epochTime (secondes après 1970)
 /// @return
-ulong GestionTemps::get()
+String GestionTemps::get()
 {
-    return epochTime->get();
+    printf("heure : %s\n", rtc.now().toString());
+    return DateTime(rtc.now()).timestamp();
 }

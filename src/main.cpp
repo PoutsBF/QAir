@@ -55,25 +55,21 @@ void setup()
 {
     Serial.begin(115200);
 
-    while ((!Serial) && (millis() < 5000));        
+    while ((!Serial) && (millis() < 5000));
 
+    Serial.println("-----------------------------------");
     Serial.println("-- Stéphane Lepoutère ----- 2022 --");
     Serial.println("-- Mesure de la qualité de l'air --");
+    Serial.println("-----------------------------------");
 
     displayQAir.init();
-    Serial.println("display");
 
     capteurEnv.init(30000);
-    Serial.println("bme280");
     capteurQualAir.init(10000);
-    Serial.println("sgp30");
 
     stripled.init(13);
-    Serial.println("neopixel");
 
     supervAlim.init(60000);
-    Serial.println("alim'");
-
 
     webServeur.init();
 
