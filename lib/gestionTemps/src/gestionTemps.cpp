@@ -101,6 +101,6 @@ uint8_t GestionTemps::lecture(void)
 /// @return
 String GestionTemps::get()
 {
-    printf("heure : %s\n", rtc.now().toString());
+    printf("heure : %s\n", DateTime(rtc.now()).timestamp().c_str());
     return DateTime(rtc.now()).timestamp();
 }
