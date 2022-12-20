@@ -45,14 +45,9 @@ public:
     void maj_data(const char *key, T valeur)
     {
         (*doc)[key] = valeur;
-        serializeJson(*doc, Serial);
-        Serial.println("");
+        //serializeJson(*doc, Serial);
     }
 
-    // void maj_data(const char *key, const char *valeur);
-    // void maj_data(const char *key, float valeur);
-    // void maj_data(const char *key, uint16_t valeur);
-    // void maj_data(const char *key, uint32_t valeur);
     static void send(uint32_t id);
 
     void cleanupClients(void);
