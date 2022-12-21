@@ -45,6 +45,14 @@ public:
     void maj_data(const char *key, T valeur)
     {
         (*doc)[key] = valeur;
+        Serial.print("valeur : ");
+        Serial.print(valeur);
+        Serial.print(" clé : ");
+        Serial.print(key);
+        Serial.print(" enregisté : ");
+        T var_temp = (*doc)[key];
+        Serial.println(var_temp);
+
         //serializeJson(*doc, Serial);
     }
 

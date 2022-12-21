@@ -43,6 +43,7 @@ uint8_t WebServeur::init()
 
     doc = new DynamicJsonDocument(1024);
 
+    (*doc)[JS_TimeStamp] = "-";
     (*doc)[JS_temperature] = "-";
     (*doc)[JS_hygroAbs] = "-";
     (*doc)[JS_hygroRel] = "-";
