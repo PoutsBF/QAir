@@ -97,7 +97,6 @@ void loop()
         webServeur.maj_data(JS_hygroRel, data_env.humidite);
         webServeur.maj_data(JS_hygroAbs, data_env.hygroAbsolue);
         webServeur.maj_data(JS_pression, data_env.pression);
-        webServeur.send(0);
 
         changement = true;
     }
@@ -112,7 +111,6 @@ void loop()
 
         webServeur.maj_data(JS_eco2, data_env_qualite.eCO2);
         webServeur.maj_data(JS_tcov, data_env_qualite.TVOC);
-        webServeur.send(0);
 
         changement = true;
     }
@@ -122,13 +120,12 @@ void loop()
         webServeur.maj_data(JS_battNiveau, (uint16_t)supervAlim.niveau());
         webServeur.maj_data(JS_battTension, supervAlim.valeur());
 
-        webServeur.send(0);
-
         changement = true;
     }
 
     if (changement)
     {
+        changement = false;
         webServeur.maj_data(JS_TimeStamp, gestionTemps.get());
         webServeur.send(0);
     }

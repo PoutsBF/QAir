@@ -45,7 +45,10 @@ public:
     void maj_data(const char *key, T valeur)
     {
         (*doc)[key] = valeur;
-        Serial.print("valeur : ");
+
+        Serial.print("[json] capa : ");
+        Serial.print(doc->memoryUsage());
+        Serial.print(" valeur : ");
         Serial.print(valeur);
         Serial.print(" clé : ");
         Serial.print(key);

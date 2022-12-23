@@ -41,7 +41,7 @@ uint8_t WebServeur::init()
     ws = new AsyncWebSocket("/ws");
     events = new AsyncEventSource("/events");
 
-    doc = new DynamicJsonDocument(1024);
+    doc = new DynamicJsonDocument(256);
 
     (*doc)[JS_TimeStamp] = "-";
     (*doc)[JS_temperature] = "-";
@@ -233,11 +233,14 @@ void WebServeur::cleanupClients(void)
 /// @param id 0 pour tous les clients, sinon le référentiel du client
 void WebServeur::send(uint32_t id)
 {
-    char envoie[1024];
-
-    serializeJson(*doc, envoie, 1024);
     if (id == 0)
     {
+        char envoie[1024];
+        serializeJson(*doc, envoie, 1024);
+
+        DBG serializeJson(*doc, Serial);
+        DBG Serial.printf("\n");
+
         if (ws->count() != 0)
         {
             ws->textAll(envoie);
@@ -245,8 +248,9 @@ void WebServeur::send(uint32_t id)
     }
     else
     {
-        ws->text(id, envoie);
+        ws->text(id, "{\"info\":\" Stéphane Lepoutère \"}");
     }
+    doc->clear();
 }
 
 /// @brief Affiche les données d'état de l'ESP 32, du wifi et du web socket
