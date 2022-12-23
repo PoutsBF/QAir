@@ -63,7 +63,7 @@ void CapteurEnv::init(uint16_t arg_delay_time)
 
     _temperature = new VariableShared<float>(0.0);
     _humidite = new VariableShared<float>(0.0);
-    _pression = new VariableShared<float>(0.0);
+    _pression = new VariableShared<uint16_t>(0.0);
     _hygroAbsolue = new VariableShared<uint32_t>(0);
 
     // Démarrer la tâche de mise à jour

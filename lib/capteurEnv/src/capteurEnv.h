@@ -19,7 +19,7 @@ struct sdata_env
 {
     float temperature;
     float humidite;
-    float pression;
+    uint16_t pression;
     uint32_t hygroAbsolue;
 };
 
@@ -38,7 +38,7 @@ private:
 
     VariableShared<float> * _temperature;        // Heure au format 1970 + nb secondes
     VariableShared<float> * _humidite;        // Heure au format 1970 + nb secondes
-    VariableShared<float> * _pression;        // Heure au format 1970 + nb secondes
+    VariableShared<uint16_t> * _pression;        // Heure au format 1970 + nb secondes
     VariableShared<uint32_t> * _hygroAbsolue;        // Heure au format 1970 + nb secondes
 
     TaskHandle_t id_tache;                       // Handle de la tache de maj du ntc
