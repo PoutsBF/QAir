@@ -33,6 +33,8 @@
 #include <webServeur.h>
 #include <gestionTemps.h>
 
+#include <bddGestion.h>
+
 //---------------------------------------------------------
 // Gestion du capteur environnement
 //
@@ -57,10 +59,10 @@ void setup()
 
     while ((!Serial) && (millis() < 5000));
 
-    Serial.println("-----------------------------------");
-    Serial.println("-- Stéphane Lepoutère ----- 2022 --");
-    Serial.println("-- Mesure de la qualité de l'air --");
-    Serial.println("-----------------------------------");
+    Serial.println("-------------------------------------------------------");
+    Serial.println("------------ Stéphane Lepoutère ----- 2022 ------------");
+    Serial.println("------------ Mesure de la qualité de l'air ------------");
+    Serial.println("-------------------------------------------------------");
 
     displayQAir.init();
 
@@ -74,6 +76,10 @@ void setup()
     webServeur.init();
 
     gestionTemps.init();
+
+    sdata_bddGestion test;
+    Serial.print("Taille enregistrement : ");
+    Serial.println(sizeof(test));
 }
 
 /******************************************************************************

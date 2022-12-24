@@ -18,6 +18,8 @@
 	<link rel="stylesheet" href="css/bootstrap.min.css">
 	<link rel="stylesheet" href="css/style.css">
 
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 	<script type="text/javascript" src="js/scripts.js"></script>
 
 </head>
@@ -61,7 +63,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-md-2">
+			<div class="col-12 col-sm-6 col-md-3 col-lg-2">
 				<div class="card bg-default">
 					<h5 class="card-header">
 						température
@@ -76,7 +78,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2">
+			<div class="col-12 col-sm-6 col-md-3 col-lg-2">
 				<div class="card bg-default">
 					<h5 class="card-header">
 						Hygrométrie
@@ -91,7 +93,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2">
+			<div class="col-12 col-sm-6 col-md-3 col-lg-2">
 				<div class="card bg-default">
 					<h5 class="card-header">
 						Hygro absolue
@@ -106,7 +108,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2">
+			<div class="col-12 col-sm-6 col-md-3 col-lg-2">
 				<div class="card bg-default">
 					<h5 class="card-header">
 						Pression
@@ -121,7 +123,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2">
+			<div class="col-12 col-sm-6 col-md-3 col-lg-2">
 				<div class="card bg-default">
 					<h5 class="card-header">
 						eCO2
@@ -136,7 +138,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-2">
+			<div class="col-12 col-sm-6 col-md-3 col-lg-2">
 				<div class="card bg-default">
 					<h5 class="card-header">
 						TCOV
@@ -163,10 +165,20 @@
 					déconnecté
 				</button>
 				<p>
-					adresse IP : <span id="IPserveurWS"></span>
+					<table>
+						<tr><td>adresse IP</td><td id="IPserveurWS"></td></tr>
+						<tr><td>mémoire totale</td><td id="mem_total"></td></tr>
+						<tr><td>mémoire libre</td><td id="mem_libre"></td></tr>
+						<tr><td>Occupation</td><td><span id="id_occ_mem"></span> %</td></tr>
+						<tr><td>Clients connectés</td><td id="id_clients"></td></tr>
+						<tr><td>Niveau réception</td><td id="id_rssi"></td></tr>
+					</table>
 				</p>
 				<p class="text-center">
 					<span id="val_batt">-</span> % (<span id="val_battVolt">-</span> V)
+					<i class="fa fa-battery-empty font-20px fa-battery-filling" aria-hidden="true">
+						<span id="result" style="width:calc(10% * 0.73)"></span>
+					</i>
 				</p>
 			</div>
 			<div class="col-md-4">

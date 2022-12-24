@@ -233,9 +233,10 @@ void WebServeur::cleanupClients(void)
 /// @param id 0 pour tous les clients, sinon le référentiel du client
 void WebServeur::send(uint32_t id)
 {
+    char envoie[1024];
+
     if (id == 0)
     {
-        char envoie[1024];
         serializeJson(*doc, envoie, 1024);
 
         DBG serializeJson(*doc, Serial);
@@ -244,12 +245,26 @@ void WebServeur::send(uint32_t id)
         if (ws->count() != 0)
         {
             ws->textAll(envoie);
+            snprintf(envoie, 1024, "{\"mem_libre\":%d,\"mem_total\":%d,\"id_clients\":%d,\"id_rssi\":%d}",
+                     ESP.getFreeHeap(),
+                     ESP.getHeapSize(),
+                     ws->count(),
+                     WiFi.RSSI());
+            ws->textAll(envoie);
         }
     }
     else
     {
         ws->text(id, "{\"info\":\" Stéphane Lepoutère \"}");
+        snprintf(envoie, 1024, "{\"mem_libre\":%d,\"mem_total\":%d,\"id_clients\":%d,\"id_rssi\":%d}",
+                 ESP.getFreeHeap(),
+                 ESP.getHeapSize(),
+                 ws->count(),
+                 WiFi.RSSI());
+        ws->text(id, envoie);
     }
+    Serial.print(envoie);
+
     doc->clear();
 }
 

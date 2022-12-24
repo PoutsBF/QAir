@@ -24,7 +24,9 @@ function hexToDec(hex) {
 
 domReady(function () {
     var idTimer;
-    var connection = new WebSocket('ws://' + location.hostname + '/ws');
+// developpement en local : changement adresse websocket
+//    var connection = new WebSocket('ws://' + location.hostname + '/ws');
+    var connection = new WebSocket('ws://192.168.0.39/ws');
     //    var connection = new WebSocket('ws://' + location.hostname + ':81');
 
     var el = document.getElementById(btInfoConnection);
@@ -94,6 +96,7 @@ domReady(function () {
 
             Object.keys(msg).forEach(function (key)
             {
+                if(document.getElementById(key) != null)
                 switch (key)
                 {
                     case "val_temp":
@@ -102,26 +105,21 @@ domReady(function () {
                     case "val_hygro":
                         document.getElementById(key).innerHTML = msg[key].toFixed(0);
                         break;
-                    case "val_hygroAbs":
-                        document.getElementById(key).innerHTML = msg[key];
-                        break;
-                    case "val_pression":
-                        document.getElementById(key).innerHTML = msg[key].toFixed(0);
-                        break;
-                    case "val_eco2":
-                        document.getElementById(key).innerHTML = msg[key];
-                        break;
-                    case "val_tcov":
-                        document.getElementById(key).innerHTML = msg[key];
-                        break;
-                    case "val_batt":
-                        document.getElementById(key).innerHTML = msg[key];
-                        break;
                     case "val_battVolt":
                         document.getElementById(key).innerHTML = msg[key].toFixed(2);
                         break;
+                    case "val_batt":    // exécute aussi le "default"
+                        document.getElementById("result").setAttribute("style", "width:calc(" + msg[key] + "% * 0.73)");
+                    default:
+                        document.getElementById(key).innerHTML = msg[key];
                 }
-             });
+            });
+
+            // calcul % occupation
+            var mem_total = document.getElementById("mem_total").innerText;
+            var mem_occ = mem_total - document.getElementById("mem_libre").innerText;
+            
+            document.getElementById("id_occ_mem").innerHTML = ((mem_occ / mem_total)*100).toFixed(1);
         }
         catch (e)
         {
