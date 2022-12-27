@@ -265,7 +265,9 @@ void WebServeur::send(uint32_t id)
     }
     Serial.print(envoie);
 
-    doc->clear();
+    doc->remove(JS_TimeStamp);
+    doc->garbageCollect();
+    Serial.printf("\n[JSON] Taille : %d\n", doc->memoryUsage());
 }
 
 /// @brief Affiche les données d'état de l'ESP 32, du wifi et du web socket
